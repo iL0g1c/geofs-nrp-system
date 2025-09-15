@@ -108,6 +108,9 @@ app.get("/admin-panel", secured, (req, res, next) => {
 });
 
 app.get("/", (req, res) => {
+  if (typeof req.isAuthenticated === "function" && req.isAuthenticated()) {
+    return res.redirect("/admin-panel");
+  }
   res.render("index", { title: "Home" });
 });
 
