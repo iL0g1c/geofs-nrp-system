@@ -88,14 +88,6 @@ app.use((req, res, next) => {
 
 app.use("/", authRouter);
 
-app.get("/admin-panel", secured, (req, res, next) => {
-  const { _raw, _json, ...userProfile } = req.user;
-  res.render("admin panel", {
-    title: "Admin Panel",
-    userProfile: userProfile
-  });
-});
-
 /**
  * Routes Definitions
  */
@@ -106,6 +98,14 @@ const secured = (req, res, next) => {
   req.session.returnTo = req.originalUrl;
   res.redirect("/login");
 };
+
+app.get("/admin-panel", secured, (req, res, next) => {
+  const { _raw, _json, ...userProfile } = req.user;
+  res.render("admin panel", {
+    title: "Admin Panel",
+    userProfile: userProfile
+  });
+});
 
 app.get("/", (req, res) => {
   res.render("index", { title: "Home" });
