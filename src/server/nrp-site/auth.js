@@ -17,7 +17,11 @@ router.get(
   "/login",
   (req, res, next) => {
     if (typeof req.isAuthenticated === "function" && req.isAuthenticated()) {
-      return res.redirect("/");
+      return res.redirect("/admin-panel");
+    }
+
+    if (req.session) {
+      req.session.returnTo = "/admin-panel";
     }
 
     next();
@@ -26,7 +30,7 @@ router.get(
     scope: "openid email profile"
   }),
   (req, res) => {
-    res.redirect("/");
+    res.redirect("/admin-panel");
   }
 );
 
@@ -44,7 +48,7 @@ router.get("/callback", (req, res, next) => {
       }
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;
-      res.redirect(returnTo || "/");
+      res.redirect(returnTo || "/admin-panel");
     });
   })(req, res, next);
 });
