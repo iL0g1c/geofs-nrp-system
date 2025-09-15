@@ -101,7 +101,7 @@ const secured = (req, res, next) => {
 
 app.get("/admin-panel", secured, (req, res, next) => {
   const { _raw, _json, ...userProfile } = req.user;
-  res.render("admin panel", {
+  res.render("admin-panel", {
     title: "Admin Panel",
     userProfile: userProfile
   });
