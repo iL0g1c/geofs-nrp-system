@@ -1,0 +1,16 @@
+extends layout
+
+block layout-content
+  div.View
+    h1.Banner GNA
+    div.Message
+      div.Title
+        h1 GeoFS NRP Admin Site
+      span.Details For High Command officers and centralized governing members
+      div.NavButtons
+      if isAuthenticated
+        a(href="/admin-panel")
+          div.NavButton Just dive in!
+      else
+        a(href="/login")
+          div.NavButton Log in
