@@ -1375,25 +1375,13 @@ $('#logo-upload').onchange = function() {
 // Edit Force Details
 $('#edit-details-btn').onclick = () => {
     $('#edit-force-name').value = $('.force-name').textContent.replace('🇺🇸 ', '');
-    $('#edit-ships').value = $('#ships-count').textContent;
-    $('#edit-aircraft').value = $('#aircraft-count').textContent;
-    $('#edit-fleets').value = $('#fleets-count').textContent;
-    $('#edit-personnel').value = $('#personnel-count').textContent;
-    $('#edit-commander').value = $('#commander-value').textContent;
-    $('#edit-established').value = $('#established-value').textContent;
-    $('#edit-headquarters').value = $('#headquarters-value').textContent;
+    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e => $(`#edit-${e.split("-")[0]}`).value = $(`#${e}`).textContent);
     $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g, '');
     editForceModal.open();
 };
 $('#save-force-details').onclick = () => {
     $('.force-name').innerHTML = `🇺🇸 ${$('#edit-force-name').value}`;
-    $('#ships-count').textContent = $('#edit-ships').value;
-    $('#aircraft-count').textContent = $('#edit-aircraft').value;
-    $('#fleets-count').textContent = $('#edit-fleets').value;
-    $('#personnel-count').textContent = $('#edit-personnel').value;
-    $('#commander-value').textContent = $('#edit-commander').value;
-    $('#established-value').textContent = $('#edit-established').value;
-    $('#headquarters-value').textContent = $('#edit-headquarters').value;
+    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e => $(`#${e}`).textContent = $(`#edit-${e.split("-")[0]}`).value);
     $('#motto-value').textContent = `"${$('#edit-motto').value}"`;
     editForceModal.close();
 };
@@ -1427,11 +1415,7 @@ $('#base-list').onclick = e => {
     if (e.target.classList.contains('btn-edit')) {
         const b = store.bases().find(b => b.id === id);
         $('#base-modal-title').textContent = 'Edit Base';
-        $('#base-id').value = b.id;
-        $('#base-name').value = b.name;
-        $('#base-location').value = b.location;
-        $('#base-capacity').value = b.capacity;
-        $('#base-status').value = b.status;
+        ['id', 'name', 'location', 'capacity', 'status'].forEach(e => $(`#base-${e}`).value = b[e]);
         baseModal.open();
     }
     if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
@@ -1441,10 +1425,7 @@ $('#base-list').onclick = e => {
 };
 $('#add-base-btn').onclick = () => {
     $('#base-modal-title').textContent = 'Add Base';
-    $('#base-id').value = '';
-    $('#base-name').value = '';
-    $('#base-location').value = '';
-    $('#base-capacity').value = '';
+    ['id', 'name', 'location', 'capacity'].forEach(e => $(`#base-${e}`).value = '');
     $('#base-status').value = 'operational';
     baseModal.open();
 };
@@ -1469,11 +1450,7 @@ $('#ship-list').onclick = e => {
     if (e.target.classList.contains('btn-edit')) {
         const s = store.ships().find(s => s.id === id);
         $('#ship-modal-title').textContent = 'Edit Ship';
-        $('#ship-id').value = s.id;
-        $('#ship-name').value = s.name;
-        $('#ship-class').value = s.class;
-        $('#ship-hull').value = s.hull;
-        $('#ship-status').value = s.status;
+        ['id', 'name', 'class', 'hull', 'status'].forEach(e => $(`#ship-${e}`).value = s[e]);
         shipModal.open();
     }
     if (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) {
@@ -1483,10 +1460,8 @@ $('#ship-list').onclick = e => {
 };
 $('#add-ship-btn').onclick = () => {
     $('#ship-modal-title').textContent = 'Add Ship';
-    $('#ship-id').value = '';
-    $('#ship-name').value = '';
+    ['ship-id', 'ship-name', 'ship-hull'].forEach(e => $(`#${e}`).value = '');
     $('#ship-class').value = 'Aircraft Carrier';
-    $('#ship-hull').value = '';
     $('#ship-status').value = 'active';
     shipModal.open();
 };
