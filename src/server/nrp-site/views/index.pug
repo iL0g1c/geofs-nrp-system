@@ -3,7 +3,12 @@ extends layout
 block layout-content
   main.login-page
     section.login-card
-      h1.login-logo GNA
-      h2.login-title GeoFS NRP Admin Site
-      a.login-button(href="/login") Log in
-      p.login-details For High Command officers and centralized governing members
+      span.login-badge Command Access
+      .login-identity
+        span.login-acronym GNA
+        h1.login-title GeoFS NRP Admin Site
+      p.login-description Central operations interface for the GeoFS Naval Response Program.
+      a.login-button.btn.btn-primary.btn-full(href="/login")
+        span.login-button-icon 🔐
+        span Log In
+      p.login-details Access restricted to High Command officers and centralized governing members.
