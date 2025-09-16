@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naval Command System - Dynamic Ships</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-red: #da3633;
+            --accent-yellow: #d29922;
+            --btn-primary: #238636;
+            --btn-secondary: #30363d;
+            --sidebar-width: 280px;
+            --topbar-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Topbar Styles */
+        .topbar {
+            background-color: var(--bg-card);
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background-color: var(--btn-secondary);
+        }
+
+        .tab.active {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .sign-out-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: rgba(218, 54, 51, 0.1);
+            border-color: rgba(238, 45, 41, 0.1) ;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-card);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease;
+            z-index: 90;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            padding-top: calc(20px + var(--topbar-height));
+        }
+
+        .force-info {
+            margin-bottom: 24px;
+        }
+
+        .force-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .force-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background-color: var(--btn-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .force-logo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px var(--accent-blue);
+        }
+
+        .force-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .force-logo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .edit-icon {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .force-logo:hover .edit-icon {
+            opacity: 1;
+        }
+
+        .force-name-container {
+            flex: 1;
+        }
+
+        .force-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .force-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background-color: rgba(48, 54, 61, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .stat-card:hover {
+            background-color: rgba(48, 54, 61, 0.5);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .force-details {
+            margin-top: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-weight: 500;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .edit-details-btn {
+            width: 100%;
+            padding: 8px;
+            background: none;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .edit-details-btn:hover {
+            background-color: var(--btn-secondary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 24px;
+            margin-top: var(--topbar-height);
+            transition: margin-left 0.3s ease;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--btn-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #383e47;
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #2ea043;
+        }
+
+        .btn-danger {
+            background-color: var(--btn-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.1);
+            color: var(--accent-red);
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #383e47;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .card-content p {
+            margin-bottom: 8px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-green { background-color: var(--accent-green); }
+        .status-yellow { background-color: var(--accent-yellow); }
+        .status-red { background-color: var(--accent-red); }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .checkbox-item input {
+            margin-right: 4px;
+        }
+
+        /* File input styling */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: var(--btn-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Base List Styles */
+        .base-list, .ship-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .base-card, .ship-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .base-card:hover, .ship-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .base-card-header, .ship-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .base-name, .ship-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+
+        .base-actions, .ship-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .base-details, .ship-details {
+            margin-top: 12px;
+        }
+
+        .base-detail, .ship-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+        }
+
+        .base-detail:last-child, .ship-detail:last-child {
+            border-bottom: none;
+        }
+
+        .base-detail-label, .ship-detail-label {
+            color: var(--text-secondary);
+        }
+
+        .base-detail-value, .ship-detail-value {
+            font-weight: 500;
+        }
+
+        .add-base-btn, .add-ship-btn, .design-ship-btn {
+            background-color: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .add-base-btn:hover, .add-ship-btn:hover {
+            background-color: #2ea043;
+        }
+
+        .design-ship-btn {
+            background-color: var(--btn-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .design-ship-btn:hover {
+            background-color: #383e47;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Ship Class Badge */
+        .ship-class-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        /* Section Buttons */
+        .section-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content,
+            .topbar {
+                margin-left: 0;
+            }
+            
+            .topbar {
+                left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .container {
+                padding: 16px;
+            }
+            
+            .force-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .force-name-container {
+                text-align: center;
+            }
+            
+            .topbar {
+                padding: 0 12px;
+            }
+            
+            .user-menu {
+                gap: 8px;
+            }
+            
+            .sidebar-content {
+                padding-top: 20px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .base-list, .ship-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .add-ship-btn, .design-ship-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="force-info">
+                <div class="force-header">
+                    <div class="force-logo" id="force-logo">
+                        <div class="force-logo-placeholder">
+                            🇺🇸
+                            <div class="edit-icon">✏️</div>
+                        </div>
+                        <input type="file" id="logo-upload" class="hidden" accept="image/*">
+                    </div>
+                    <div class="force-name-container">
+                        <h2 class="force-name">🇺🇸 United States Navy</h2>
+                    </div>
+                </div>
+                
+                <div class="force-stats">
+                    <div class="stat-card" data-stat="ships">
+                        <div class="stat-value" id="ships-count">293</div>
+                        <div class="stat-label">Ships</div>
+                    </div>
+                    <div class="stat-card" data-stat="aircraft">
+                        <div class="stat-value" id="aircraft-count">3,700</div>
+                        <div class="stat-label">Aircraft</div>
+                    </div>
+                    <div class="stat-card" data-stat="fleets">
+                        <div class="stat-value" id="fleets-count">74</div>
+                        <div class="stat-label">Fleets</div>
+                    </div>
+                    <div class="stat-card" data-stat="personnel">
+                        <div class="stat-value" id="personnel-count">332K</div>
+                        <div class="stat-label">Personnel</div>
+                    </div>
+                </div>
+                
+                <div class="force-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Commander</span>
+                        <span class="detail-value" id="commander-value">Adm. Michael Gilday</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Established</span>
+                        <span class="detail-value" id="established-value">1775</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Headquarters</span>
+                        <span class="detail-value" id="headquarters-value">Pentagon, VA</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Motto</span>
+                        <span class="detail-value" id="motto-value">"Non sibi sed patriae"</span>
+                    </div>
+                    <button class="edit-details-btn" id="edit-details-btn">✏️ Edit Force Details</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="topbar-content">
+            <div class="tabs">
+                <div class="tab" data-tab="bases">Bases</div>
+                <div class="tab active" data-tab="ships">Ships</div>
+                <div class="tab" data-tab="fleets">Fleets</div>
+            </div>
+            <div class="user-menu">
+                <button class="sign-out-btn">
+                    <span>🚪</span> Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Bases Content (Initially hidden) -->
+        <div id="bases-content" class="hidden">
+            <div class="section-header">
+                <h2 class="section-title">Naval Bases</h2>
+                <button class="add-base-btn" id="add-base-btn">
+                    <span>+</span> Add Base
+                </button>
+            </div>
+            
+            <div class="base-list" id="base-list">
+                <!-- Base cards will be dynamically added here -->
+                <div class="base-card">
+                    <div class="base-card-header">
+                        <h3 class="base-name">Norfolk Naval Station</h3>
+                        <div class="base-actions">
+                            <button class="btn btn-edit" data-id="1">✏️</button>
+                            <button class="btn btn-danger" data-id="1">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="base-details">
+                        <div class="base-detail">
+                            <span class="base-detail-label">Location:</span>
+                            <span class="base-detail-value">Virginia, USA</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Capacity:</span>
+                            <span class="base-detail-value">12,000 personnel</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Status:</span>
+                            <span class="base-detail-value status"><span class="status-dot status-green"></span> Operational</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="base-card">
+                    <div class="base-card-header">
+                        <h3 class="base-name">Pearl Harbor</h3>
+                        <div class="base-actions">
+                            <button class="btn btn-edit" data-id="2">✏️</button>
+                            <button class="btn btn-danger" data-id="2">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="base-details">
+                        <div class="base-detail">
+                            <span class="base-detail-label">Location:</span>
+                            <span class="base-detail-value">Hawaii, USA</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Capacity:</span>
+                            <span class="base-detail-value">15,000 personnel</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Status:</span>
+                            <span class="base-detail-value status"><span class="status-dot status-green"></span> Operational</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="base-card">
+                    <div class="base-card-header">
+                        <h3 class="base-name">Guantanamo Bay</h3>
+                        <div class="base-actions">
+                            <button class="btn btn-edit" data-id="3">✏️</button>
+                            <button class="btn btn-danger" data-id="3">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="base-details">
+                        <div class="base-detail">
+                            <span class="base-detail-label">Location:</span>
+                            <span class="base-detail-value">Cuba</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Capacity:</span>
+                            <span class="base-detail-value">8,000 personnel</span>
+                        </div>
+                        <div class="base-detail">
+                            <span class="base-detail-label">Status:</span>
+                            <span class="base-detail-value status"><span class="status-dot status-yellow"></span> Limited Operations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ships Content (Initially visible) -->
+        <div id="ships-content">
+            <div class="section-header">
+                <h2 class="section-title">Naval Ships</h2>
+                <div class="section-buttons">
+                    <a href="" target="_blank" class="design-ship-btn">
+                        <span></span> Design Ships
+                    </a>
+                    <button class="add-ship-btn" id="add-ship-btn">
+                        <span>+</span> Add Ship
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ship-list" id="ship-list">
+                <!-- Ship cards will be dynamically added here -->
+                <div class="ship-card">
+                    <div class="ship-card-header">
+                        <h3 class="ship-name">USS Gerald R. Ford</h3>
+                        <div class="ship-actions">
+                            <button class="btn btn-edit" data-id="1">✏️</button>
+                            <button class="btn btn-danger" data-id="1">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="ship-details">
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Class:</span>
+                            <span class="ship-detail-value"><span class="ship-class-badge">Aircraft Carrier</span></span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Hull Number:</span>
+                            <span class="ship-detail-value">CVN-78</span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Status:</span>
+                            <span class="ship-detail-value status"><span class="status-dot status-green"></span> Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ship-card">
+                    <div class="ship-card-header">
+                        <h3 class="ship-name">USS Zumwalt</h3>
+                        <div class="ship-actions">
+                            <button class="btn btn-edit" data-id="2">✏️</button>
+                            <button class="btn btn-danger" data-id="2">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="ship-details">
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Class:</span>
+                            <span class="ship-detail-value"><span class="ship-class-badge">Destroyer</span></span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Hull Number:</span>
+                            <span class="ship-detail-value">DDG-1000</span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Status:</span>
+                            <span class="ship-detail-value status"><span class="status-dot status-green"></span> Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ship-card">
+                    <div class="ship-card-header">
+                        <h3 class="ship-name">USS Virginia</h3>
+                        <div class="ship-actions">
+                            <button class="btn btn-edit" data-id="3">✏️</button>
+                            <button class="btn btn-danger" data-id="3">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="ship-details">
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Class:</span>
+                            <span class="ship-detail-value"><span class="ship-class-badge">Submarine</span></span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Hull Number:</span>
+                            <span class="ship-detail-value">SSN-774</span>
+                        </div>
+                        <div class="ship-detail">
+                            <span class="ship-detail-label">Status:</span>
+                            <span class="ship-detail-value status"><span class="status-dot status-green"></span> Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fleets Content (Initially hidden) -->
+        <div id="fleets-content" class="hidden">
+            <div class="section-header">
+                <h2 class="section-title">Naval Fleets</h2>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Carrier Strike Group 12</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>Base: Norfolk Naval Station</p>
+                        <p>Composition:</p>
+                        <p>• CVN-78 USS Gerald R. Ford (Carrier)</p>
+                        <p>• DDG-116 USS Zumwalt (Destroyer)</p>
+                        <p>• SSN-785 USS Indiana (Submarine)</p>
+                        <p>+ 5 more vessels</p>
+                        <p>Status: <span class="status"><span class="status-dot status-green"></span> Deployed - Mediterranean</span></p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pacific Submarine Fleet</h3>
+                    </div>
+                    <div class="card-content">
+                        <p>Base: Pearl Harbor</p>
+                        <p>Composition:</p>
+                        <p>• 12 Attack Submarines</p>
+                        <p>• 3 Ballistic Missile Submarines</p>
+                        <p>Status: <span class="status"><span class="status-dot status-green"></span> Operational</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Force Details Modal -->
+    <div class="modal" id="edit-force-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Force Details</h3>
+                <button class="modal-close" id="close-force-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="edit-force-name">Force Name</label>
+                    <input type="text" id="edit-force-name" class="form-input" placeholder="Enter force name">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-ships">Ships</label>
+                            <input type="text" id="edit-ships" class="form-input" placeholder="Number of ships">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-aircraft">Aircraft</label>
+                            <input type="text" id="edit-aircraft" class="form-input" placeholder="Number of aircraft">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-fleets">Fleets</label>
+                            <input type="text" id="edit-fleets" class="form-input" placeholder="Number of fleets">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-personnel">Personnel</label>
+                            <input type="text" id="edit-personnel" class="form-input" placeholder="Number of personnel">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-commander">Commander</label>
+                    <input type="text" id="edit-commander" class="form-input" placeholder="Commander name">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-established">Established</label>
+                            <input type="text" id="edit-established" class="form-input" placeholder="Year established">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="edit-headquarters">Headquarters</label>
+                            <input type="text" id="edit-headquarters" class="form-input" placeholder="Headquarters location">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-motto">Motto</label>
+                    <input type="text" id="edit-motto" class="form-input" placeholder="Force motto">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-force-details">Cancel</button>
+                <button class="btn btn-primary" id="save-force-details">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Base Modal -->
+    <div class="modal" id="base-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="base-modal-title">Add New Base</h3>
+                <button class="modal-close" id="close-base-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="base-id">
+                <div class="form-group">
+                    <label class="form-label" for="base-name">Base Name</label>
+                    <input type="text" id="base-name" class="form-input" placeholder="Enter base name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="base-location">Location</label>
+                    <input type="text" id="base-location" class="form-input" placeholder="Enter location">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="base-capacity">Capacity</label>
+                    <input type="text" id="base-capacity" class="form-input" placeholder="Enter capacity (e.g. 10,000 personnel)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="base-status">Status</label>
+                    <select id="base-status" class="form-input">
+                        <option value="operational">Operational</option>
+                        <option value="limited">Limited Operations</option>
+                        <option value="under-construction">Under Construction</option>
+                        <option value="decommissioned">Decommissioned</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-base">Cancel</button>
+                <button class="btn btn-primary" id="save-base">Save Base</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Ship Modal -->
+    <div class="modal" id="ship-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="ship-modal-title">Add New Ship</h3>
+                <button class="modal-close" id="close-ship-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ship-id">
+                <div class="form-group">
+                    <label class="form-label" for="ship-name">Ship Name</label>
+                    <input type="text" id="ship-name" class="form-input" placeholder="Enter ship name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="ship-class">Class</label>
+                    <select id="ship-class" class="form-input">
+                        <option value="Aircraft Carrier">Aircraft Carrier</option>
+                        <option value="Destroyer">Destroyer</option>
+                        <option value="Cruiser">Cruiser</option>
+                        <option value="Submarine">Submarine</option>
+                        <option value="Amphibious">Amphibious</option>
+                        <option value="Frigate">Frigate</option>
+                        <option value="Patrol">Patrol</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="ship-hull">Hull Number</label>
+                    <input type="text" id="ship-hull" class="form-input" placeholder="Enter hull number (e.g. CVN-78)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="ship-status">Status</label>
+                    <select id="ship-status" class="form-input">
+                        <option value="active">Active</option>
+                        <option value="reserve">Reserve</option>
+                        <option value="under-construction">Under Construction</option>
+                        <option value="decommissioned">Decommissioned</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-ship">Cancel</button>
+                <button class="btn btn-primary" id="save-ship">Save Ship</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+ const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function openModal(modal) {
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modal) {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// Close modal on escape or outside click
+function bindModalEvents(modal, closeBtns) {
+    closeBtns.forEach(btn => btn.addEventListener('click', () => closeModal(modal)));
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal); });
+    document.addEventListener('keydown', (e) => { 
+        if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(modal);
+    });
+}
+
+function statusClass(type, status) {
+    const map = {
+        base: {
+            operational: 'status-green',
+            limited: 'status-yellow',
+            'under-construction': 'status-blue',
+            decommissioned: 'status-red'
+        },
+        ship: {
+            active: 'status-green',
+            reserve: 'status-yellow',
+            'under-construction': 'status-blue',
+            decommissioned: 'status-red'
+        }
+    };
+    return map[type][status] || 'status-green';
+}
+
+function statusText(type, status) {
+    const map = {
+        base: {
+            operational: 'Operational',
+            limited: 'Limited Operations',
+            'under-construction': 'Under Construction',
+            decommissioned: 'Decommissioned'
+        },
+        ship: {
+            active: 'Active',
+            reserve: 'Reserve',
+            'under-construction': 'Under Construction',
+            decommissioned: 'Decommissioned'
+        }
+    };
+    return map[type][status] || 'Active';
+}
+
+// ================== Force Logo Upload ================== //
+const forceLogo = $('#force-logo');
+const logoUpload = $('#logo-upload');
+forceLogo.addEventListener('click', () => logoUpload.click());
+logoUpload.addEventListener('change', function () {
+    if (this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => forceLogo.innerHTML = `<img src="${e.target.result}" alt="Force Logo">`;
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
+// ================== Edit Force Details ================== //
+const editForceModal = $('#edit-force-modal');
+bindModalEvents(editForceModal, [$('#close-force-modal'), $('#cancel-force-details')]);
+
+$('#edit-details-btn').addEventListener('click', () => {
+    $('#edit-force-name').value = $('.force-name').textContent.replace('🇺🇸 ', '');
+    $('#edit-ships').value = $('#ships-count').textContent;
+    $('#edit-aircraft').value = $('#aircraft-count').textContent;
+    $('#edit-fleets').value = $('#fleets-count').textContent;
+    $('#edit-personnel').value = $('#personnel-count').textContent;
+    $('#edit-commander').value = $('#commander-value').textContent;
+    $('#edit-established').value = $('#established-value').textContent;
+    $('#edit-headquarters').value = $('#headquarters-value').textContent;
+    $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g, '');
+    openModal(editForceModal);
+});
+
+$('#save-force-details').addEventListener('click', () => {
+    $('.force-name').innerHTML = `🇺🇸 ${$('#edit-force-name').value}`;
+    $('#ships-count').textContent = $('#edit-ships').value;
+    $('#aircraft-count').textContent = $('#edit-aircraft').value;
+    $('#fleets-count').textContent = $('#edit-fleets').value;
+    $('#personnel-count').textContent = $('#edit-personnel').value;
+    $('#commander-value').textContent = $('#edit-commander').value;
+    $('#established-value').textContent = $('#edit-established').value;
+    $('#headquarters-value').textContent = $('#edit-headquarters').value;
+    $('#motto-value').textContent = `"${$('#edit-motto').value}"`;
+    closeModal(editForceModal);
+});
+
+// ================== Tabs ================== //
+$$('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        $$('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        ['bases','ships','fleets'].forEach(id => $(`#${id}-content`).classList.add('hidden'));
+        $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
+    });
+});
+
+// ================== Inline Stat Editing ================== //
+$$('.stat-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const type = card.dataset.stat;
+        const value = card.querySelector('.stat-value').textContent;
+        const newValue = prompt(`Enter new value for ${type}:`, value);
+        if (newValue !== null) card.querySelector('.stat-value').textContent = newValue;
+    });
+});
+
+// ================== Generic CRUD Renderer ================== //
+function renderList(type, list, container, templateFn) {
+    container.innerHTML = list.length
+        ? list.map(item => templateFn(item)).join('')
+        : `<div class="empty-state">
+                <div class="empty-state-icon">${type === 'base' ? '⚓' : '🚢'}</div>
+                <h3>No Naval ${type === 'base' ? 'Bases' : 'Ships'}</h3>
+                <p>Click "Add ${type[0].toUpperCase() + type.slice(1)}" to add your first ${type}</p>
+           </div>`;
+}
+
+// ================== Bases ================== //
+let bases = [
+    { id: 1, name: "Norfolk Naval Station", location: "Virginia, USA", capacity: "12,000 personnel", status: "operational" },
+    { id: 2, name: "Pearl Harbor", location: "Hawaii, USA", capacity: "15,000 personnel", status: "operational" },
+    { id: 3, name: "Guantanamo Bay", location: "Cuba", capacity: "8,000 personnel", status: "limited" }
+];
+let nextBaseId = 4;
+
+const baseModal = $('#base-modal');
+bindModalEvents(baseModal, [$('#close-base-modal'), $('#cancel-base')]);
+
+function baseTemplate(base) {
+    return `
+        <div class="base-card" data-id="${base.id}">
+            <div class="base-card-header">
+                <h3>${base.name}</h3>
+                <div class="base-actions">
+                    <button class="btn btn-edit">✏️</button>
+                    <button class="btn btn-danger">🗑️</button>
+                </div>
+            </div>
+            <div class="base-details">
+                <div><strong>Location:</strong> ${base.location}</div>
+                <div><strong>Capacity:</strong> ${base.capacity}</div>
+                <div><strong>Status:</strong> 
+                    <span class="status"><span class="status-dot ${statusClass('base', base.status)}"></span> 
+                    ${statusText('base', base.status)}</span>
+                </div>
+            </div>
+        </div>`;
+}
+
+function renderBases() {
+    renderList('base', bases, $('#base-list'), baseTemplate);
+}
+renderBases();
+
+// Delegated edit/delete for bases
+$('#base-list').addEventListener('click', (e) => {
+    const card = e.target.closest('.base-card');
+    if (!card) return;
+    const id = parseInt(card.dataset.id);
+
+    if (e.target.classList.contains('btn-edit')) {
+        const base = bases.find(b => b.id === id);
+        $('#base-modal-title').textContent = 'Edit Base';
+        $('#base-id').value = base.id;
+        $('#base-name').value = base.name;
+        $('#base-location').value = base.location;
+        $('#base-capacity').value = base.capacity;
+        $('#base-status').value = base.status;
+        openModal(baseModal);
+    }
+
+    if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
+        bases = bases.filter(b => b.id !== id);
+        renderBases();
+    }
+});
+
+$('#add-base-btn').addEventListener('click', () => {
+    $('#base-modal-title').textContent = 'Add Base';
+    $('#base-id').value = '';
+    $('#base-name').value = '';
+    $('#base-location').value = '';
+    $('#base-capacity').value = '';
+    $('#base-status').value = 'operational';
+    openModal(baseModal);
+});
+
+$('#save-base').addEventListener('click', () => {
+    const id = $('#base-id').value ? parseInt($('#base-id').value) : null;
+    const name = $('#base-name').value.trim();
+    const location = $('#base-location').value.trim();
+    const capacity = $('#base-capacity').value.trim();
+    const status = $('#base-status').value;
+    if (!name || !location || !capacity) return alert('Fill all fields');
+
+    if (id) {
+        const idx = bases.findIndex(b => b.id === id);
+        bases[idx] = { id, name, location, capacity, status };
+    } else {
+        bases.push({ id: nextBaseId++, name, location, capacity, status });
+    }
+    renderBases();
+    closeModal(baseModal);
+});
+
+// ================== Ships ================== //
+let ships = [
+    { id: 1, name: "USS Gerald R. Ford", class: "Aircraft Carrier", hull: "CVN-78", status: "active" },
+    { id: 2, name: "USS Zumwalt", class: "Destroyer", hull: "DDG-1000", status: "active" },
+    { id: 3, name: "USS Virginia", class: "Submarine", hull: "SSN-774", status: "active" }
+];
+let nextShipId = 4;
+
+const shipModal = $('#ship-modal');
+bindModalEvents(shipModal, [$('#close-ship-modal'), $('#cancel-ship')]);
+
+function shipTemplate(ship) {
+    return `
+        <div class="ship-card" data-id="${ship.id}">
+            <div class="ship-card-header">
+                <h3>${ship.name}</h3>
+                <div class="ship-actions">
+                    <button class="btn btn-edit">✏️</button>
+                    <button class="btn btn-danger">🗑️</button>
+                </div>
+            </div>
+            <div class="ship-details">
+                <div><strong>Class:</strong> <span class="ship-class-badge">${ship.class}</span></div>
+                <div><strong>Hull:</strong> ${ship.hull}</div>
+                <div><strong>Status:</strong> 
+                    <span class="status"><span class="status-dot ${statusClass('ship', ship.status)}"></span> 
+                    ${statusText('ship', ship.status)}</span>
+                </div>
+            </div>
+        </div>`;
+}
+
+function renderShips() {
+    renderList('ship', ships, $('#ship-list'), shipTemplate);
+}
+renderShips();
+
+// Delegated edit/delete for ships
+$('#ship-list').addEventListener('click', (e) => {
+    const card = e.target.closest('.ship-card');
+    if (!card) return;
+    const id = parseInt(card.dataset.id);
+
+    if (e.target.classList.contains('btn-edit')) {
+        const ship = ships.find(s => s.id === id);
+        $('#ship-modal-title').textContent = 'Edit Ship';
+        $('#ship-id').value = ship.id;
+        $('#ship-name').value = ship.name;
+        $('#ship-class').value = ship.class;
+        $('#ship-hull').value = ship.hull;
+        $('#ship-status').value = ship.status;
+        openModal(shipModal);
+    }
+
+    if (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) {
+        ships = ships.filter(s => s.id !== id);
+        renderShips();
+    }
+});
+
+$('#add-ship-btn').addEventListener('click', () => {
+    $('#ship-modal-title').textContent = 'Add Ship';
+    $('#ship-id').value = '';
+    $('#ship-name').value = '';
+    $('#ship-class').value = 'Aircraft Carrier';
+    $('#ship-hull').value = '';
+    $('#ship-status').value = 'active';
+    openModal(shipModal);
+});
+
+$('#save-ship').addEventListener('click', () => {
+    const id = $('#ship-id').value ? parseInt($('#ship-id').value) : null;
+    const name = $('#ship-name').value.trim();
+    const cls = $('#ship-class').value;
+    const hull = $('#ship-hull').value.trim();
+    const status = $('#ship-status').value;
+    if (!name || !hull) return alert('Fill all fields');
+
+    if (id) {
+        const idx = ships.findIndex(s => s.id === id);
+        ships[idx] = { id, name, class: cls, hull, status };
+    } else {
+        ships.push({ id: nextShipId++, name, class: cls, hull, status });
+    }
+    renderShips();
+    closeModal(shipModal);
+});
+    </script>
+</body>
+</html>
