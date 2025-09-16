@@ -1400,8 +1400,7 @@ $$('.tab').forEach(tab =>
 $$('.stat-card').forEach(card =>
     card.onclick = () => {
         const val = card.querySelector('.stat-value');
-        const nv = prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent);
-        if (nv !== null) val.textContent = nv;
+        if (prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent); !== null) val.textContent = nv;
     }
 );
 
@@ -1414,14 +1413,9 @@ $('#base-list').onclick = e => {
     const id = +card.dataset.id;
     if (e.target.classList.contains('btn-edit')) {
         const b = store.bases().find(b => b.id === id);
-        $('#base-modal-title').textContent = 'Edit Base';
-        ['id', 'name', 'location', 'capacity', 'status'].forEach(e => $(`#base-${e}`).value = b[e]);
-        baseModal.open();
+        return void ($('#base-modal-title').textContent = 'Edit Base', ['id', 'name', 'location', 'capacity', 'status'].forEach(e => $(`#base-${e}`).value = b[e]), baseModal.open());
     }
-    if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
-        store.removeBase(id);
-        renderBases();
-    }
+    (e.target.classList.contains('btn-danger') && confirm('Delete base?')) && (store.removeBase(id), renderBases());
 };
 $('#add-base-btn').onclick = () => {
     $('#base-modal-title').textContent = 'Add Base';
@@ -1453,10 +1447,7 @@ $('#ship-list').onclick = e => {
         ['id', 'name', 'class', 'hull', 'status'].forEach(e => $(`#ship-${e}`).value = s[e]);
         shipModal.open();
     }
-    if (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) {
-        store.removeShip(id);
-        renderShips();
-    }
+    (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) && (store.removeShip(id), renderShips());
 };
 $('#add-ship-btn').onclick = () => {
     $('#ship-modal-title').textContent = 'Add Ship';
@@ -1466,8 +1457,8 @@ $('#add-ship-btn').onclick = () => {
     shipModal.open();
 };
 $('#save-ship').onclick = () => {
-    const id = $('#ship-id').value ? +$('#ship-id').value : null;
-    const name = $('#ship-name').value.trim(), cls = $('#ship-class').value, hull = $('#ship-hull').value.trim(), status = $('#ship-status').value;
+    const id = $('#ship-id').value ? +$('#ship-id').value : null
+    , name = $('#ship-name').value.trim(), cls = $('#ship-class').value, hull = $('#ship-hull').value.trim(), status = $('#ship-status').value;
     if (!name || !hull) return alert('Fill all fields');
     id
         ? store.updateShip({ id, name, class: cls, hull, status })
