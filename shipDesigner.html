@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naval Ship Design System</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-red: #da3633;
+            --accent-yellow: #d29922;
+            --btn-primary: #238636;
+            --btn-secondary: #30363d;
+            --sidebar-width: 280px;
+            --topbar-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Topbar Styles */
+        .topbar {
+            background-color: var(--bg-card);
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .nav-link:hover {
+            background-color: var(--btn-secondary);
+        }
+
+        .nav-link.active {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .sign-out-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: rgba(218, 54, 51, 0.1);
+            border-color: rgba(238, 45, 41, 0.1) ;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            margin-top: var(--topbar-height);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--btn-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #383e47;
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #2ea043;
+        }
+
+        .btn-danger {
+            background-color: var(--btn-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.1);
+            color: var(--accent-red);
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-secondary);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #383e47;
+        }
+
+        .btn-icon {
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .card-content p {
+            margin-bottom: 8px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-green { background-color: var(--accent-green); }
+        .status-yellow { background-color: var(--accent-yellow); }
+        .status-red { background-color: var(--accent-red); }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .checkbox-item input {
+            margin-right: 4px;
+        }
+
+        /* Design List Styles */
+        .design-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .design-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .design-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .design-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .design-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+
+        .design-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .design-details {
+            margin-top: 12px;
+        }
+
+        .design-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+        }
+
+        .design-detail:last-child {
+            border-bottom: none;
+        }
+
+        .design-detail-label {
+            color: var(--text-secondary);
+        }
+
+        .design-detail-value {
+            font-weight: 500;
+        }
+
+        .add-design-btn {
+            background-color: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .add-design-btn:hover {
+            background-color: #2ea043;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Ship Class Badge */
+        .ship-class-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: var(--btn-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* View Design Modal */
+        .view-design-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .view-design-section {
+            grid-column: span 2;
+        }
+
+        .view-design-section h3 {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent-blue);
+        }
+
+        .view-design-item {
+            margin-bottom: 16px;
+        }
+
+        .view-design-label {
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .view-design-value {
+            font-size: 16px;
+        }
+
+        /* Image Upload */
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ship-image-preview {
+            width: 200px;
+            height: 120px;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        .ship-image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .ship-image-placeholder {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* Weapon and Sensor Slots */
+        .weapon-slots, .sensor-slots {
+            margin-top: 16px;
+        }
+
+        .weapon-slot, .sensor-slot {
+            background-color: rgba(48, 54, 61, 0.3);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .weapon-slot-header, .sensor-slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .weapon-slot-title, .sensor-slot-title {
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+
+        .add-weapon-slot, .add-sensor-slot {
+            background-color: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .add-weapon-slot:hover, .add-sensor-slot:hover {
+            background-color: #2ea043;
+        }
+
+        .remove-weapon-slot, .remove-sensor-slot {
+            background: none;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            font-size: 18px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .remove-weapon-slot:hover, .remove-sensor-slot:hover {
+            background-color: rgba(218, 54, 51, 0.1);
+        }
+
+        /* Primary Design Form */
+        .primary-design-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-section-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Sensor Type Badge */
+        .sensor-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: rgba(210, 153, 34, 0.15);
+            color: var(--accent-yellow);
+        }
+
+        /* Predefined Select */
+        .predefined-select {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .topbar {
+                padding: 0 12px;
+            }
+            
+            .nav-links {
+                gap: 8px;
+            }
+            
+            .user-menu {
+                gap: 8px;
+            }
+            
+            .design-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .view-design-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .view-design-section {
+                grid-column: span 1;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+            
+            .primary-design-form {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="topbar-content">
+            <div class="logo">
+                <span>⚓</span> GNA Admin
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link active">Designs</a>
+                <a href="#" class="nav-link">Specifications</a>
+                <a href="#" class="nav-link">Projects</a>
+            </div>
+            <div class="user-menu">
+                <button class="sign-out-btn">
+                    <span>🚪</span> Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="primary-design-form">
+            <div class="form-section">
+                <h2 class="form-section-title">⚓ Create New Ship Design</h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="design-name">Ship Class Name</label>
+                    <input type="text" id="design-name" class="form-input" placeholder="Enter class name">
+                </div>
+                
+                <div class="image-upload-container">
+                    <div class="ship-image-preview" id="ship-image-preview">
+                        <div class="ship-image-placeholder">No image uploaded</div>
+                    </div>
+                    <div class="file-input-wrapper">
+                        <button class="btn btn-secondary">Upload Ship Image</button>
+                        <input type="file" id="ship-image-upload" accept="image/*">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-type">Type</label>
+                            <select id="design-type" class="form-input">
+                                <option value="Aircraft Carrier">Aircraft Carrier</option>
+                                <option value="Destroyer">Destroyer</option>
+                                <option value="Cruiser">Cruiser</option>
+                                <option value="Submarine">Submarine</option>
+                                <option value="Amphibious">Amphibious</option>
+                                <option value="Frigate">Frigate</option>
+                                <option value="Patrol">Patrol</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-displacement">Displacement (tons)</label>
+                            <input type="number" id="design-displacement" class="form-input" placeholder="Enter displacement">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-length">Length (m)</label>
+                            <input type="number" id="design-length" class="form-input" placeholder="Enter length">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-beam">Beam (m)</label>
+                            <input type="number" id="design-beam" class="form-input" placeholder="Enter beam">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="design-propulsion">Propulsion</label>
+                    <input type="text" id="design-propulsion" class="form-input" placeholder="Enter propulsion details">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="form-section-title">📡 Sensors</h3>
+                
+                <div class="sensor-slots" id="sensor-slots">
+                    <div class="sensor-slot" data-slot="0">
+                        <div class="sensor-slot-header">
+                            <h4 class="sensor-slot-title">Sensor Slot 1</h4>
+                        </div>
+                        <div class="form-group predefined-select">
+                            <label class="form-label">Predefined Sensors</label>
+                            <select class="form-input sensor-predefined">
+                                <option value="">-- Select a predefined sensor --</option>
+                                <option value="AN/SPY-6">AN/SPY-6 (Radar)</option>
+                                <option value="AN/SPQ-9B">AN/SPQ-9B (Radar)</option>
+                                <option value="AN/SQQ-89">AN/SQQ-89 (Sonar)</option>
+                                <option value="AN/BYG-1">AN/BYG-1 (Sonar)</option>
+                                <option value="SLQ-32">SLQ-32 (ESM)</option>
+                                <option value="AN/SPS-49">AN/SPS-49 (Radar)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sensor Name</label>
+                            <input type="text" class="form-input sensor-name" placeholder="Enter sensor name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-input sensor-type">
+                                        <option value="Radar">Radar</option>
+                                        <option value="Sonar">Sonar</option>
+                                        <option value="ESM">ESM</option>
+                                        <option value="EO/IR">EO/IR</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Range (km)</label>
+                                    <input type="number" class="form-input sensor-range" placeholder="Enter range">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input sensor-description" rows="2" placeholder="Enter sensor description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="add-sensor-slot" id="add-sensor-slot">
+                    <span>+</span> Add Sensor
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="form-section-title">🔫 Armament</h3>
+                
+                <div class="weapon-slots" id="weapon-slots">
+                    <div class="weapon-slot" data-slot="0">
+                        <div class="weapon-slot-header">
+                            <h4 class="weapon-slot-title">Weapon Slot 1</h4>
+                        </div>
+                        <div class="form-group predefined-select">
+                            <label class="form-label">Predefined Weapons</label>
+                            <select class="form-input weapon-predefined">
+                                <option value="">-- Select a predefined weapon --</option>
+                                <option value="Mk 45">Mk 45 5-inch Gun</option>
+                                <option value="Mk 41">Mk 41 VLS</option>
+                                <option value="Phalanx">Phalanx CIWS</option>
+                                <option value="Harpoon">Harpoon Missile</option>
+                                <option value="Tomahawk">Tomahawk Missile</option>
+                                <option value="Standard Missile">Standard Missile</option>
+                                <option value="Mk 48">Mk 48 Torpedo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weapon Name</label>
+                            <input type="text" class="form-input weapon-name" placeholder="Enter weapon name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-input weapon-quantity" placeholder="Enter quantity">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Caliber/Type</label>
+                                    <input type="text" class="form-input weapon-caliber" placeholder="Enter caliber or type">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input weapon-description" rows="2" placeholder="Enter weapon description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="add-weapon-slot" id="add-weapon-slot">
+                    <span>+</span> Add Weapon
+                </button>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn" id="reset-design">Reset</button>
+                <button class="btn btn-primary" id="save-design">Save Design</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Predefined weapons and sensors data
+        const predefinedWeapons = {
+            "Mk 45": { name: "Mk 45 5-inch Gun", quantity: 1, caliber: "5-inch", description: "Lightweight naval gun system" },
+            "Mk 41": { name: "Mk 41 VLS", quantity: 16, caliber: "Cell launcher", description: "Vertical Launching System for missiles" },
+            "Phalanx": { name: "Phalanx CIWS", quantity: 2, caliber: "20mm", description: "Close-in weapon system for defense" },
+            "Harpoon": { name: "Harpoon Missile", quantity: 8, caliber: "Anti-ship missile", description: "All-weather, over-the-horizon, anti-ship missile" },
+            "Tomahawk": { name: "Tomahawk Missile", quantity: 16, caliber: "Cruise missile", description: "Subsonic cruise missile for long-range strikes" },
+            "Standard Missile": { name: "Standard Missile", quantity: 32, caliber: "Surface-to-air missile", description: "Medium-range surface-to-air missile" },
+            "Mk 48": { name: "Mk 48 Torpedo", quantity: 6, caliber: "Heavyweight torpedo", description: "Advanced lightweight torpedo" }
+        };
+
+        const predefinedSensors = {
+            "AN/SPY-6": { name: "AN/SPY-6", type: "Radar", range: 400, description: "Air and missile defense radar" },
+            "AN/SPQ-9B": { name: "AN/SPQ-9B", type: "Radar", range: 200, description: "X-band radar for surface search and fire control" },
+            "AN/SQQ-89": { name: "AN/SQQ-89", type: "Sonar", range: 20, description: "Underwater warfare combat system" },
+            "AN/BYG-1": { name: "AN/BYG-1", type: "Sonar", range: 30, description: "Advanced fire control system for submarines" },
+            "SLQ-32": { name: "SLQ-32", type: "ESM", range: 150, description: "Electronic warfare suite" },
+            "AN/SPS-49": { name: "AN/SPS-49", type: "Radar", range: 300, description: "Long-range air search radar" }
+        };
+
+        // Ship Design Management
+        let designs = [];
+        let nextDesignId = 1;
+
+        // DOM Elements
+        const designNameInput = document.getElementById('design-name');
+        const shipImageUpload = document.getElementById('ship-image-upload');
+        const shipImagePreview = document.getElementById('ship-image-preview');
+        const designTypeInput = document.getElementById('design-type');
+        const designDisplacementInput = document.getElementById('design-displacement');
+        const designLengthInput = document.getElementById('design-length');
+        const designBeamInput = document.getElementById('design-beam');
+        const designPropulsionInput = document.getElementById('design-propulsion');
+        const sensorSlotsContainer = document.getElementById('sensor-slots');
+        const addSensorSlotBtn = document.getElementById('add-sensor-slot');
+        const weaponSlotsContainer = document.getElementById('weapon-slots');
+        const addWeaponSlotBtn = document.getElementById('add-weapon-slot');
+        const resetDesignBtn = document.getElementById('reset-design');
+        const saveDesignBtn = document.getElementById('save-design');
+
+        // Image upload handling
+        shipImageUpload.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    shipImagePreview.innerHTML = `<img src="${e.target.result}" alt="Ship Image">`;
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Predefined sensor selection
+        sensorSlotsContainer.addEventListener('change', function(e) {
+            if (e.target.classList.contains('sensor-predefined')) {
+                const selectedValue = e.target.value;
+                const sensorSlot = e.target.closest('.sensor-slot');
+                
+                if (selectedValue && predefinedSensors[selectedValue]) {
+                    const sensor = predefinedSensors[selectedValue];
+                    sensorSlot.querySelector('.sensor-name').value = sensor.name;
+                    sensorSlot.querySelector('.sensor-type').value = sensor.type;
+                    sensorSlot.querySelector('.sensor-range').value = sensor.range;
+                    sensorSlot.querySelector('.sensor-description').value = sensor.description;
+                } else if (!selectedValue) {
+                    // Clear fields when "Select a predefined sensor" is chosen
+                    sensorSlot.querySelector('.sensor-name').value = '';
+                    sensorSlot.querySelector('.sensor-type').value = 'Radar';
+                    sensorSlot.querySelector('.sensor-range').value = '';
+                    sensorSlot.querySelector('.sensor-description').value = '';
+                }
+            }
+        });
+
+        // Predefined weapon selection
+        weaponSlotsContainer.addEventListener('change', function(e) {
+            if (e.target.classList.contains('weapon-predefined')) {
+                const selectedValue = e.target.value;
+                const weaponSlot = e.target.closest('.weapon-slot');
+                
+                if (selectedValue && predefinedWeapons[selectedValue]) {
+                    const weapon = predefinedWeapons[selectedValue];
+                    weaponSlot.querySelector('.weapon-name').value = weapon.name;
+                    weaponSlot.querySelector('.weapon-quantity').value = weapon.quantity;
+                    weaponSlot.querySelector('.weapon-caliber').value = weapon.caliber;
+                    weaponSlot.querySelector('.weapon-description').value = weapon.description;
+                } else if (!selectedValue) {
+                    // Clear fields when "Select a predefined weapon" is chosen
+                    weaponSlot.querySelector('.weapon-name').value = '';
+                    weaponSlot.querySelector('.weapon-quantity').value = '';
+                    weaponSlot.querySelector('.weapon-caliber').value = '';
+                    weaponSlot.querySelector('.weapon-description').value = '';
+                }
+            }
+        });
+
+        // Add sensor slot
+        addSensorSlotBtn.addEventListener('click', () => {
+            const slotCount = document.querySelectorAll('.sensor-slot').length;
+            const newSlot = document.createElement('div');
+            newSlot.className = 'sensor-slot';
+            newSlot.setAttribute('data-slot', slotCount);
+            newSlot.innerHTML = `
+                <div class="sensor-slot-header">
+                    <h4 class="sensor-slot-title">Sensor Slot ${slotCount + 1}</h4>
+                    <button class="remove-sensor-slot">&times;</button>
+                </div>
+                <div class="form-group predefined-select">
+                    <label class="form-label">Predefined Sensors</label>
+                    <select class="form-input sensor-predefined">
+                        <option value="">-- Select a predefined sensor --</option>
+                        <option value="AN/SPY-6">AN/SPY-6 (Radar)</option>
+                        <option value="AN/SPQ-9B">AN/SPQ-9B (Radar)</option>
+                        <option value="AN/SQQ-89">AN/SQQ-89 (Sonar)</option>
+                        <option value="AN/BYG-1">AN/BYG-1 (Sonar)</option>
+                        <option value="SLQ-32">SLQ-32 (ESM)</option>
+                        <option value="AN/SPS-49">AN/SPS-49 (Radar)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sensor Name</label>
+                    <input type="text" class="form-input sensor-name" placeholder="Enter sensor name">
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select class="form-input sensor-type">
+                                <option value="Radar">Radar</option>
+                                <option value="Sonar">Sonar</option>
+                                <option value="ESM">ESM</option>
+                                <option value="EO/IR">EO/IR</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">Range (km)</label>
+                            <input type="number" class="form-input sensor-range" placeholder="Enter range">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input sensor-description" rows="2" placeholder="Enter sensor description"></textarea>
+                </div>
+            `;
+            
+            sensorSlotsContainer.appendChild(newSlot);
+            
+            // Add event listener to the remove button
+            newSlot.querySelector('.remove-sensor-slot').addEventListener('click', function() {
+                newSlot.remove();
+                updateSensorSlotTitles();
+            });
+        });
+
+        // Function to update sensor slot titles after removal
+        function updateSensorSlotTitles() {
+            const slots = document.querySelectorAll('.sensor-slot');
+            slots.forEach((slot, index) => {
+                const title = slot.querySelector('.sensor-slot-title');
+                title.textContent = `Sensor Slot ${index + 1}`;
+                slot.setAttribute('data-slot', index);
+            });
+        }
+
+        // Event delegation for removing sensor slots
+        sensorSlotsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-sensor-slot')) {
+                e.target.closest('.sensor-slot').remove();
+                updateSensorSlotTitles();
+            }
+        });
+
+        // Add weapon slot
+        addWeaponSlotBtn.addEventListener('click', () => {
+            const slotCount = document.querySelectorAll('.weapon-slot').length;
+            const newSlot = document.createElement('div');
+            newSlot.className = 'weapon-slot';
+            newSlot.setAttribute('data-slot', slotCount);
+            newSlot.innerHTML = `
+                <div class="weapon-slot-header">
+                    <h4 class="weapon-slot-title">Weapon Slot ${slotCount + 1}</h4>
+                    <button class="remove-weapon-slot">&times;</button>
+                </div>
+                <div class="form-group predefined-select">
+                    <label class="form-label">Predefined Weapons</label>
+                    <select class="form-input weapon-predefined">
+                        <option value="">-- Select a predefined weapon --</option>
+                        <option value="Mk 45">Mk 45 5-inch Gun</option>
+                        <option value="Mk 41">Mk 41 VLS</option>
+                        <option value="Phalanx">Phalanx CIWS</option>
+                        <option value="Harpoon">Harpoon Missile</option>
+                        <option value="Tomahawk">Tomahawk Missile</option>
+                        <option value="Standard Missile">Standard Missile</option>
+                        <option value="Mk 48">Mk 48 Torpedo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weapon Name</label>
+                    <input type="text" class="form-input weapon-name" placeholder="Enter weapon name">
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" class="form-input weapon-quantity" placeholder="Enter quantity">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">Caliber/Type</label>
+                            <input type="text" class="form-input weapon-caliber" placeholder="Enter caliber or type">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input weapon-description" rows="2" placeholder="Enter weapon description"></textarea>
+                </div>
+            `;
+            
+            weaponSlotsContainer.appendChild(newSlot);
+            
+            // Add event listener to the remove button
+            newSlot.querySelector('.remove-weapon-slot').addEventListener('click', function() {
+                newSlot.remove();
+                updateWeaponSlotTitles();
+            });
+        });
+
+        // Function to update weapon slot titles after removal
+        function updateWeaponSlotTitles() {
+            const slots = document.querySelectorAll('.weapon-slot');
+            slots.forEach((slot, index) => {
+                const title = slot.querySelector('.weapon-slot-title');
+                title.textContent = `Weapon Slot ${index + 1}`;
+                slot.setAttribute('data-slot', index);
+            });
+        }
+
+        // Event delegation for removing weapon slots
+        weaponSlotsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-weapon-slot')) {
+                e.target.closest('.weapon-slot').remove();
+                updateWeaponSlotTitles();
+            }
+        });
+
+        // Reset design form
+        resetDesignBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+                designNameInput.value = '';
+                shipImagePreview.innerHTML = '<div class="ship-image-placeholder">No image uploaded</div>';
+                designTypeInput.value = 'Aircraft Carrier';
+                designDisplacementInput.value = '';
+                designLengthInput.value = '';
+                designBeamInput.value = '';
+                designPropulsionInput.value = '';
+                
+                // Reset sensor slots to just one
+                sensorSlotsContainer.innerHTML = `
+                    <div class="sensor-slot" data-slot="0">
+                        <div class="sensor-slot-header">
+                            <h4 class="sensor-slot-title">Sensor Slot 1</h4>
+                        </div>
+                        <div class="form-group predefined-select">
+                            <label class="form-label">Predefined Sensors</label>
+                            <select class="form-input sensor-predefined">
+                                <option value="">-- Select a predefined sensor --</option>
+                                <option value="AN/SPY-6">AN/SPY-6 (Radar)</option>
+                                <option value="AN/SPQ-9B">AN/SPQ-9B (Radar)</option>
+                                <option value="AN/SQQ-89">AN/SQQ-89 (Sonar)</option>
+                                <option value="AN/BYG-1">AN/BYG-1 (Sonar)</option>
+                                <option value="SLQ-32">SLQ-32 (ESM)</option>
+                                <option value="AN/SPS-49">AN/SPS-49 (Radar)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sensor Name</label>
+                            <input type="text" class="form-input sensor-name" placeholder="Enter sensor name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-input sensor-type">
+                                        <option value="Radar">Radar</option>
+                                        <option value="Sonar">Sonar</option>
+                                        <option value="ESM">ESM</option>
+                                        <option value="EO/IR">EO/IR</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Range (km)</label>
+                                    <input type="number" class="form-input sensor-range" placeholder="Enter range">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input sensor-description" rows="2" placeholder="Enter sensor description"></textarea>
+                        </div>
+                    </div>
+                `;
+                
+                // Reset weapon slots to just one
+                weaponSlotsContainer.innerHTML = `
+                    <div class="weapon-slot" data-slot="0">
+                        <div class="weapon-slot-header">
+                            <h4 class="weapon-slot-title">Weapon Slot 1</h4>
+                        </div>
+                        <div class="form-group predefined-select">
+                            <label class="form-label">Predefined Weapons</label>
+                            <select class="form-input weapon-predefined">
+                                <option value="">-- Select a predefined weapon --</option>
+                                <option value="Mk 45">Mk 45 5-inch Gun</option>
+                                <option value="Mk 41">Mk 41 VLS</option>
+                                <option value="Phalanx">Phalanx CIWS</option>
+                                <option value="Harpoon">Harpoon Missile</option>
+                                <option value="Tomahawk">Tomahawk Missile</option>
+                                <option value="Standard Missile">Standard Missile</option>
+                                <option value="Mk 48">Mk 48 Torpedo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weapon Name</label>
+                            <input type="text" class="form-input weapon-name" placeholder="Enter weapon name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-input weapon-quantity" placeholder="Enter quantity">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Caliber/Type</label>
+                                    <input type="text" class="form-input weapon-caliber" placeholder="Enter caliber or type">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input weapon-description" rows="2" placeholder="Enter weapon description"></textarea>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        // Save design
+        saveDesignBtn.addEventListener('click', () => {
+            const name = designNameInput.value.trim();
+            const type = designTypeInput.value;
+            const displacement = designDisplacementInput.value ? parseInt(designDisplacementInput.value) : 0;
+            const length = designLengthInput.value ? parseInt(designLengthInput.value) : 0;
+            const beam = designBeamInput.value ? parseInt(designBeamInput.value) : 0;
+            const propulsion = designPropulsionInput.value.trim();
+            
+            // Collect sensor data
+            const sensors = [];
+            const sensorSlots = document.querySelectorAll('.sensor-slot');
+            sensorSlots.forEach(slot => {
+                const nameInput = slot.querySelector('.sensor-name');
+                const typeInput = slot.querySelector('.sensor-type');
+                const rangeInput = slot.querySelector('.sensor-range');
+                const descriptionInput = slot.querySelector('.sensor-description');
+                
+                if (nameInput.value.trim() || typeInput.value || rangeInput.value || descriptionInput.value.trim()) {
+                    sensors.push({
+                        name: nameInput.value.trim(),
+                        type: typeInput.value,
+                        range: rangeInput.value ? parseInt(rangeInput.value) : 0,
+                        description: descriptionInput.value.trim()
+                    });
+                }
+            });
+            
+            // Collect weapon data
+            const weapons = [];
+            const weaponSlots = document.querySelectorAll('.weapon-slot');
+            weaponSlots.forEach(slot => {
+                const nameInput = slot.querySelector('.weapon-name');
+                const quantityInput = slot.querySelector('.weapon-quantity');
+                const caliberInput = slot.querySelector('.weapon-caliber');
+                const descriptionInput = slot.querySelector('.weapon-description');
+                
+                if (nameInput.value.trim() || quantityInput.value || caliberInput.value.trim() || descriptionInput.value.trim()) {
+                    weapons.push({
+                        name: nameInput.value.trim(),
+                        quantity: quantityInput.value ? parseInt(quantityInput.value) : 0,
+                        caliber: caliberInput.value.trim(),
+                        description: descriptionInput.value.trim()
+                    });
+                }
+            });
+
+            if (!name) {
+                alert('Please enter a class name');
+                return;
+            }
+
+            // Add new design
+            designs.push({
+                id: nextDesignId++,
+                name,
+                type,
+                displacement,
+                length,
+                beam,
+                propulsion,
+                sensors,
+                weapons,
+                image: null
+            });
+
+            alert('Design saved successfully!');
+            
+            // Reset form
+            resetDesignBtn.click();
+        });
+    </script>
+</body>
+</html>
