@@ -1,4 +1,9 @@
 block variables
+
+- var includeBaseStyles = typeof includeBaseStyles === 'undefined' ? true : includeBaseStyles;
+- var useRootContainer = typeof useRootContainer === 'undefined' ? true : useRootContainer;
+- var bodyClass = typeof bodyClass === 'undefined' ? '' : bodyClass;
+
 doctype html
 html
   head
@@ -7,9 +12,13 @@ html
     meta(name="viewport", content="width=device-width, initial-scale=1, shrink-to-fit=no")
     meta(name="theme-color", content="#000000")
     title #{title} | GNS Admin
-    link(rel="stylesheet", href="/style.css")
+    if includeBaseStyles
+      link(rel="stylesheet", href="/style.css")
     block extra_styles
-  body
-    div#root
+  body(class=bodyClass || undefined)
+    if useRootContainer
+      div#root
+        block layout-content
+    else
       block layout-content
     block scripts

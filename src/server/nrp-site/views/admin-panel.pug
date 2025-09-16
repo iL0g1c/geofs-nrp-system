@@ -1,5 +1,10 @@
 extends layout
 
+block variables
+  - var includeBaseStyles = false
+  - var useRootContainer = false
+  - var bodyClass = 'admin-dashboard'
+
 block extra_styles
   link(rel="stylesheet", href="/admin-dashboard.css")
 
