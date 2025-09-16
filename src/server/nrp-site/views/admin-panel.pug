@@ -1,0 +1,330 @@
+extends layout
+
+block variables
+  - var includeBaseStyles = false
+  - var useRootContainer = false
+  - var bodyClass = 'admin-dashboard'
+
+block extra_styles
+  link(rel="stylesheet", href="/admin-dashboard.css")
+
+block layout-content
+  aside#sidebar.sidebar
+    .sidebar-content
+      .force-info
+        .force-header
+          #force-logo.force-logo
+            .force-logo-placeholder
+              | 🇺🇸
+              .edit-icon ✏️
+            input#logo-upload.hidden(type="file", accept="image/*")
+          .force-name-container
+            h2.force-name 🇺🇸 United States Navy
+        .force-stats
+          .stat-card(data-stat="ships")
+            #ships-count.stat-value 293
+            .stat-label Ships
+          .stat-card(data-stat="aircraft")
+            #aircraft-count.stat-value 3,700
+            .stat-label Aircraft
+          .stat-card(data-stat="fleets")
+            #fleets-count.stat-value 74
+            .stat-label Fleets
+          .stat-card(data-stat="personnel")
+            #personnel-count.stat-value 332K
+            .stat-label Personnel
+        .force-details
+          .detail-item
+            span.detail-label Commander
+            span#commander-value.detail-value Adm. Michael Gilday
+          .detail-item
+            span.detail-label Established
+            span#established-value.detail-value 1775
+          .detail-item
+            span.detail-label Headquarters
+            span#headquarters-value.detail-value Pentagon, VA
+          .detail-item
+            span.detail-label Motto
+            span#motto-value.detail-value "Non sibi sed patriae"
+          button#edit-details-btn.edit-details-btn ✏️ Edit Force Details
+  header.topbar
+    .topbar-content
+      .tabs
+        .tab(data-tab="bases") Bases
+        .tab.active(data-tab="ships") Ships
+        .tab(data-tab="fleets") Fleets
+      .user-menu
+        button.sign-out-btn
+          span 🚪
+          |  Sign Out
+  main.main-content
+    #bases-content.hidden
+      .section-header
+        h2.section-title Naval Bases
+        button#add-base-btn.add-base-btn
+          span +
+          |  Add Base
+      #base-list.base-list
+        // Base cards will be dynamically added here
+        .base-card
+          .base-card-header
+            h3.base-name Norfolk Naval Station
+            .base-actions
+              button.btn.btn-edit(data-id="1") ✏️
+              button.btn.btn-danger(data-id="1") 🗑️
+          .base-details
+            .base-detail
+              span.base-detail-label Location:
+              span.base-detail-value Virginia, USA
+            .base-detail
+              span.base-detail-label Capacity:
+              span.base-detail-value 12,000 personnel
+            .base-detail
+              span.base-detail-label Status:
+              span.base-detail-value.status
+                span.status-dot.status-green
+                |  Operational
+        .base-card
+          .base-card-header
+            h3.base-name Pearl Harbor
+            .base-actions
+              button.btn.btn-edit(data-id="2") ✏️
+              button.btn.btn-danger(data-id="2") 🗑️
+          .base-details
+            .base-detail
+              span.base-detail-label Location:
+              span.base-detail-value Hawaii, USA
+            .base-detail
+              span.base-detail-label Capacity:
+              span.base-detail-value 15,000 personnel
+            .base-detail
+              span.base-detail-label Status:
+              span.base-detail-value.status
+                span.status-dot.status-green
+                |  Operational
+        .base-card
+          .base-card-header
+            h3.base-name Guantanamo Bay
+            .base-actions
+              button.btn.btn-edit(data-id="3") ✏️
+              button.btn.btn-danger(data-id="3") 🗑️
+          .base-details
+            .base-detail
+              span.base-detail-label Location:
+              span.base-detail-value Cuba
+            .base-detail
+              span.base-detail-label Capacity:
+              span.base-detail-value 8,000 personnel
+            .base-detail
+              span.base-detail-label Status:
+              span.base-detail-value.status
+                span.status-dot.status-yellow
+                |  Limited Operations
+    #ships-content
+      .section-header
+        h2.section-title Naval Ships
+        .section-buttons
+          a.design-ship-btn(href="", target="_blank")
+            span
+            |  Design Ships
+          button#add-ship-btn.add-ship-btn
+            span +
+            |  Add Ship
+      #ship-list.ship-list
+        // Ship cards will be dynamically added here
+        .ship-card
+          .ship-card-header
+            h3.ship-name USS Gerald R. Ford
+            .ship-actions
+              button.btn.btn-edit(data-id="1") ✏️
+              button.btn.btn-danger(data-id="1") 🗑️
+          .ship-details
+            .ship-detail
+              span.ship-detail-label Class:
+              span.ship-detail-value
+                span.ship-class-badge Aircraft Carrier
+            .ship-detail
+              span.ship-detail-label Hull Number:
+              span.ship-detail-value CVN-78
+            .ship-detail
+              span.ship-detail-label Status:
+              span.ship-detail-value.status
+                span.status-dot.status-green
+                |  Active
+        .ship-card
+          .ship-card-header
+            h3.ship-name USS Zumwalt
+            .ship-actions
+              button.btn.btn-edit(data-id="2") ✏️
+              button.btn.btn-danger(data-id="2") 🗑️
+          .ship-details
+            .ship-detail
+              span.ship-detail-label Class:
+              span.ship-detail-value
+                span.ship-class-badge Destroyer
+            .ship-detail
+              span.ship-detail-label Hull Number:
+              span.ship-detail-value DDG-1000
+            .ship-detail
+              span.ship-detail-label Status:
+              span.ship-detail-value.status
+                span.status-dot.status-green
+                |  Active
+        .ship-card
+          .ship-card-header
+            h3.ship-name USS Virginia
+            .ship-actions
+              button.btn.btn-edit(data-id="3") ✏️
+              button.btn.btn-danger(data-id="3") 🗑️
+          .ship-details
+            .ship-detail
+              span.ship-detail-label Class:
+              span.ship-detail-value
+                span.ship-class-badge Submarine
+            .ship-detail
+              span.ship-detail-label Hull Number:
+              span.ship-detail-value SSN-774
+            .ship-detail
+              span.ship-detail-label Status:
+              span.ship-detail-value.status
+                span.status-dot.status-green
+                |  Active
+    #fleets-content.hidden
+      .section-header
+        h2.section-title Naval Fleets
+      .grid
+        .card
+          .card-header
+            h3.card-title Carrier Strike Group 12
+          .card-content
+            p Base: Norfolk Naval Station
+            p Composition:
+            p • CVN-78 USS Gerald R. Ford (Carrier)
+            p • DDG-116 USS Zumwalt (Destroyer)
+            p • SSN-785 USS Indiana (Submarine)
+            p + 5 more vessels
+            p
+              | Status: 
+              span.status
+                span.status-dot.status-green
+                |  Deployed - Mediterranean
+        .card
+          .card-header
+            h3.card-title Pacific Submarine Fleet
+          .card-content
+            p Base: Pearl Harbor
+            p Composition:
+            p • 12 Attack Submarines
+            p • 3 Ballistic Missile Submarines
+            p
+              | Status: 
+              span.status
+                span.status-dot.status-green
+                |  Operational
+  #edit-force-modal.modal
+    .modal-content
+      .modal-header
+        h3.modal-title Edit Force Details
+        button#close-force-modal.modal-close &times;
+      .modal-body
+        .form-group
+          label.form-label(for="edit-force-name") Force Name
+          input#edit-force-name.form-input(type="text", placeholder="Enter force name")
+        .form-row
+          .form-col
+            .form-group
+              label.form-label(for="edit-ships") Ships
+              input#edit-ships.form-input(type="text", placeholder="Number of ships")
+          .form-col
+            .form-group
+              label.form-label(for="edit-aircraft") Aircraft
+              input#edit-aircraft.form-input(type="text", placeholder="Number of aircraft")
+        .form-row
+          .form-col
+            .form-group
+              label.form-label(for="edit-fleets") Fleets
+              input#edit-fleets.form-input(type="text", placeholder="Number of fleets")
+          .form-col
+            .form-group
+              label.form-label(for="edit-personnel") Personnel
+              input#edit-personnel.form-input(type="text", placeholder="Number of personnel")
+        .form-group
+          label.form-label(for="edit-commander") Commander
+          input#edit-commander.form-input(type="text", placeholder="Commander name")
+        .form-row
+          .form-col
+            .form-group
+              label.form-label(for="edit-established") Established
+              input#edit-established.form-input(type="text", placeholder="Year established")
+          .form-col
+            .form-group
+              label.form-label(for="edit-headquarters") Headquarters
+              input#edit-headquarters.form-input(type="text", placeholder="Headquarters location")
+        .form-group
+          label.form-label(for="edit-motto") Motto
+          input#edit-motto.form-input(type="text", placeholder="Force motto")
+      .modal-footer
+        button#cancel-force-details.btn Cancel
+        button#save-force-details.btn.btn-primary Save Changes
+  #base-modal.modal
+    .modal-content
+      .modal-header
+        h3#base-modal-title.modal-title Add New Base
+        button#close-base-modal.modal-close &times;
+      .modal-body
+        input#base-id(type="hidden")
+        .form-group
+          label.form-label(for="base-name") Base Name
+          input#base-name.form-input(type="text", placeholder="Enter base name")
+        .form-group
+          label.form-label(for="base-location") Location
+          input#base-location.form-input(type="text", placeholder="Enter location")
+        .form-group
+          label.form-label(for="base-capacity") Capacity
+          input#base-capacity.form-input(type="text", placeholder="Enter capacity (e.g. 10,000 personnel)")
+        .form-group
+          label.form-label(for="base-status") Status
+          select#base-status.form-input
+            option(value="operational") Operational
+            option(value="limited") Limited Operations
+            option(value="under-construction") Under Construction
+            option(value="decommissioned") Decommissioned
+      .modal-footer
+        button#cancel-base.btn Cancel
+        button#save-base.btn.btn-primary Save Base
+  #ship-modal.modal
+    .modal-content
+      .modal-header
+        h3#ship-modal-title.modal-title Add New Ship
+        button#close-ship-modal.modal-close &times;
+      .modal-body
+        input#ship-id(type="hidden")
+        .form-group
+          label.form-label(for="ship-name") Ship Name
+          input#ship-name.form-input(type="text", placeholder="Enter ship name")
+        .form-group
+          label.form-label(for="ship-class") Class
+          select#ship-class.form-input
+            option(value="Aircraft Carrier") Aircraft Carrier
+            option(value="Destroyer") Destroyer
+            option(value="Cruiser") Cruiser
+            option(value="Submarine") Submarine
+            option(value="Amphibious") Amphibious
+            option(value="Frigate") Frigate
+            option(value="Patrol") Patrol
+        .form-group
+          label.form-label(for="ship-hull") Hull Number
+          input#ship-hull.form-input(type="text", placeholder="Enter hull number (e.g. CVN-78)")
+        .form-group
+          label.form-label(for="ship-status") Status
+          select#ship-status.form-input
+            option(value="active") Active
+            option(value="reserve") Reserve
+            option(value="under-construction") Under Construction
+            option(value="decommissioned") Decommissioned
+      .modal-footer
+        button#cancel-ship.btn Cancel
+        button#save-ship.btn.btn-primary Save Ship
+
+block scripts
+  script(src="/admin-dashboard.js")

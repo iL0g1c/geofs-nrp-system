@@ -1,0 +1,124 @@
+/* public/style.css */
+
+:root {
+  --bg-dark: #0e0e0e;
+  --bg-mid: #1c1c1c;
+  --bg-light: #3a3a3a;
+  --card-surface: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text-primary: #f4f4f4;
+  --text-secondary: #c8c8c8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at 20% 20%, var(--bg-light), var(--bg-mid) 45%, var(--bg-dark));
+  color: var(--text-primary);
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.login-page {
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-card {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 26px;
+  padding: 3rem;
+  text-align: center;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 32px 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.login-logo {
+  margin: 0;
+  font-size: 3rem;
+  letter-spacing: 0.75rem;
+  text-transform: uppercase;
+}
+
+.login-title {
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.14rem;
+}
+
+.login-details {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0.95rem 2.75rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f3f3f3, #cfcfcf);
+  color: #101010;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.login-button:hover,
+.login-button:focus {
+  background: linear-gradient(135deg, #ffffff, #dcdcdc);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.45);
+}
+
+.login-button:focus {
+  outline: 2px solid #f3f3f3;
+  outline-offset: 4px;
+}
+
+@media (max-width: 520px) {
+  #root {
+    padding: 2.5rem 1.25rem;
+  }
+
+  .login-card {
+    padding: 2.5rem 1.75rem;
+    border-radius: 22px;
+  }
+
+  .login-logo {
+    font-size: 2.4rem;
+    letter-spacing: 0.55rem;
+  }
+
+  .login-button {
+    width: 100%;
+    padding: 0.9rem 1.75rem;
+  }
+}
