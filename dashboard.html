@@ -1406,7 +1406,7 @@ $$('.stat-card').forEach(card =>
 );
 
 // Bases (CRUD)
-function renderBases() { ListRenderer.render('base', store.bases(), $('#base-list')); }
+const renderBases = () => ListRenderer.render('base', store.bases(), $('#base-list'));
 renderBases();
 $('#base-list').onclick = e => {
     const card = e.target.closest('.base-card');
