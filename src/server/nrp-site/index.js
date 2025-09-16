@@ -14,6 +14,39 @@ require("dotenv").config();
 
 const authRouter = require("./auth");
 
+const creditsSummary =
+  "Meet the volunteers keeping the GeoFS Naval Response Program running.";
+
+const creditsGroups = [
+  {
+    title: "Client-side Development",
+    description: "GeoFS addon scripts and interface engineering.",
+    members: [
+      {
+        name: "meatbroc",
+        role: "Client-side Developer",
+        contribution: "GeoFS Addon Script and Chrome extension work."
+      },
+      {
+        name: "delta_one",
+        role: "Client-side Developer",
+        contribution: "GeoFS Addon Script and interface refinements."
+      }
+    ]
+  },
+  {
+    title: "Infrastructure & Operations",
+    description: "Hosting and operational support for the program backend.",
+    members: [
+      {
+        name: "Osprey_",
+        role: "Infrastructure Lead",
+        contribution: "Server hosting and deployment management."
+      }
+    ]
+  }
+];
+
 /**
  * App Variables
  */
@@ -112,6 +145,14 @@ app.get("/", (req, res) => {
     return res.redirect("/admin-panel");
   }
   res.render("index", { title: "Home" });
+});
+
+app.get("/credits", (req, res) => {
+  res.render("credits", {
+    title: "Credits",
+    summary: creditsSummary,
+    creditsGroups
+  });
 });
 
 /**

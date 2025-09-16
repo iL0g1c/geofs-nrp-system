@@ -1,0 +1,34 @@
+extends layout
+
+block layout-content
+  main.credits-page
+    section.credits-card
+      nav.credits-nav
+        a.credits-back(href="/")
+          span.credits-back-icon &larr;
+          span Back to login
+      header.credits-header
+        h1.credits-title Project Credits
+        if summary
+          p.credits-intro= summary
+      if creditsGroups && creditsGroups.length
+        each group in creditsGroups
+          section.credits-section
+            h2.credits-section-title= group.title
+            if group.description
+              p.credits-section-description= group.description
+            if group.members && group.members.length
+              ul.credits-list
+                each member in group.members
+                  li.credits-list-item
+                    span.credits-name= member.name
+                    if member.role
+                      span.credits-role= member.role
+                    if member.contribution
+                      p.credits-contribution= member.contribution
+            else
+              p.credits-empty Details coming soon.
+      else
+        p.credits-empty No credits available at this time.
+      footer.credits-footer
+        p Thank you to the GeoFS Naval Response Program community for their continued support.
