@@ -160,6 +160,173 @@ main.login-page {
   transform: translateY(0);
 }
 
+.login-meta {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.login-credits-link {
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
+.login-credits-link:hover {
+  color: #79c0ff;
+}
+
+main.credits-page {
+  width: 100%;
+  max-width: 760px;
+}
+
+.credits-card {
+  position: relative;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  box-shadow: 0 32px 60px rgba(1, 4, 9, 0.6);
+  overflow: hidden;
+}
+
+.credits-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      160deg,
+      rgba(88, 166, 255, 0.15),
+      rgba(35, 134, 54, 0.1) 45%,
+      transparent 90%
+    );
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.credits-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.credits-nav {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.credits-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: rgba(48, 54, 61, 0.35);
+  border: 1px solid rgba(48, 54, 61, 0.65);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.credits-back:hover {
+  background-color: rgba(88, 166, 255, 0.15);
+  border-color: rgba(88, 166, 255, 0.6);
+  color: var(--accent-blue);
+}
+
+.credits-back-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.credits-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.credits-title {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.credits-intro {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.credits-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(48, 54, 61, 0.7);
+  background: rgba(22, 27, 34, 0.75);
+}
+
+.credits-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.credits-section-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.credits-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+.credits-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background-color: rgba(13, 17, 23, 0.55);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+}
+
+.credits-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.credits-role {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.credits-contribution {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.credits-empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.credits-footer {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 @media (max-width: 560px) {
   #root {
     padding: 36px 16px;
@@ -172,5 +339,18 @@ main.login-page {
 
   .login-title {
     font-size: 1.6rem;
+  }
+
+  main.credits-page {
+    max-width: 100%;
+  }
+
+  .credits-card {
+    padding: 32px 24px;
+    gap: 24px;
+  }
+
+  .credits-section {
+    padding: 18px 20px;
   }
 }
