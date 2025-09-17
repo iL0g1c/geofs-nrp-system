@@ -5,13 +5,6 @@
       return;
     }
 
-    const rootStyles = getComputedStyle(document.documentElement);
-    const statusColors = {
-      "on-patrol": rootStyles.getPropertyValue("--accent-green").trim() || "#2ea043",
-      "in-port": rootStyles.getPropertyValue("--accent-blue").trim() || "#58a6ff",
-      maintenance: rootStyles.getPropertyValue("--accent-yellow").trim() || "#d29922"
-    };
-
     const map = L.map(mapContainer, {
       zoomSnap: 0.5,
       zoomDelta: 0.5,
@@ -26,14 +19,15 @@
     const ships = Array.isArray(window.shipLocations) ? window.shipLocations : [];
 
     const markers = ships.map(ship => {
-      const color = statusColors[ship.status] || rootStyles.getPropertyValue("--accent-blue").trim() || "#58a6ff";
-
-      const marker = L.circleMarker([ship.latitude, ship.longitude], {
-        radius: 8,
-        color,
-        weight: 2,
-        fillColor: color,
-        fillOpacity: 0.7
+      const marker = L.marker([ship.latitude, ship.longitude], {
+        icon: L.divIcon({
+          className: `ship-marker-icon leaflet-div-icon ${getStatusClass(ship.status)}`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+          popupAnchor: [0, -10],
+          html: '<span class="ship-marker-icon__dot"></span>'
+        }),
+        riseOnHover: true
       }).addTo(map);
 
       const popupHtml = [
@@ -69,6 +63,20 @@
       default:
         return status;
     }
+  }
+
+  function getStatusClass(status) {
+    if (!status) {
+      return "status-default";
+    }
+
+    const normalized = String(status)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    return normalized ? `status-${normalized}` : "status-default";
   }
 
   if (document.readyState === "loading") {
