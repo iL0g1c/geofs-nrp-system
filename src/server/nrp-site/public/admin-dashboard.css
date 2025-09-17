@@ -609,7 +609,7 @@
             font-weight: 500;
         }
 
-        .add-base-btn, .add-ship-btn, .design-ship-btn {
+        .add-base-btn, .add-ship-btn, .design-ship-btn, .map-view-btn {
             background-color: var(--btn-primary);
             border: none;
             color: white;
@@ -637,6 +637,22 @@
 
         .design-ship-btn:hover {
             background-color: #383e47;
+        }
+
+        .map-view-btn {
+            background: linear-gradient(140deg, rgba(88, 166, 255, 0.22), rgba(88, 166, 255, 0.4));
+            border: 1px solid rgba(88, 166, 255, 0.45);
+            color: #ffffff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px rgba(88, 166, 255, 0.25);
+        }
+
+        .map-view-btn:hover {
+            background: linear-gradient(140deg, rgba(88, 166, 255, 0.35), rgba(88, 166, 255, 0.55));
+            border-color: rgba(88, 166, 255, 0.65);
         }
 
         .empty-state {

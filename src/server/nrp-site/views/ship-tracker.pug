@@ -1,0 +1,48 @@
+extends layout
+
+block variables
+  - var bodyClass = 'ship-map-body'
+
+block extra_styles
+  link(rel="stylesheet", href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossorigin="")
+  link(rel="stylesheet", href="/ship-map.css")
+
+block layout-content
+  main.ship-map-page
+    section.map-card
+      header.map-card__header
+        h1.map-card__title Fleet Operations Map
+        p.map-card__subtitle Monitor priority assets and their latest reported positions across the globe.
+      #ship-map
+      footer.map-card__footer
+        span.map-card__footnote Updated from aggregated fleet telemetry snapshots.
+    - const statusCounts = shipLocations.reduce((acc, ship) => {
+    -   const key = ship.status;
+    -   acc[key] = (acc[key] || 0) + 1;
+    -   return acc;
+    - }, {});
+    section.ship-map-legend
+      h2.legend-title Fleet Snapshot
+      .legend-grid
+        .legend-item
+          span.legend-dot.status-on-patrol
+          .legend-label
+            span.legend-label__title Active Patrol
+            span.legend-label__meta #{statusCounts['on-patrol'] || 0} ships underway
+        .legend-item
+          span.legend-dot.status-in-port
+          .legend-label
+            span.legend-label__title In Port
+            span.legend-label__meta #{statusCounts['in-port'] || 0} ships docked
+        .legend-item
+          span.legend-dot.status-maintenance
+          .legend-label
+            span.legend-label__title Maintenance
+            span.legend-label__meta #{statusCounts['maintenance'] || 0} ships in refit
+      p.legend-footnote Ship positions are representative training data for visualization purposes.
+
+block scripts
+  script(src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=", crossorigin="")
+  script.
+    window.shipLocations = !{JSON.stringify(shipLocations)};
+  script(src="/ship-map.js")
