@@ -194,7 +194,9 @@ body.ship-map-body #root {
 }
 
 .popup-meta span {
-  white-space: nowrap;
+  min-width: 0;
+  white-space: normal;
+  display: block;
 }
 
 @media (max-width: 900px) {
