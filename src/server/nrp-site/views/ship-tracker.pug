@@ -4,7 +4,7 @@ block variables
   - var bodyClass = 'ship-map-body'
 
 block extra_styles
-  link(rel="stylesheet", href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", integrity="sha512-sA+e2atFlL8EJx1YgnSUZXoqBYwygJyI072QtdgQXl3k5ufADGWEcRrHBM1wYyM1Kzb0YhgrXLI4h2H2yx0Pg==", crossorigin="")
+  link(rel="stylesheet", href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossorigin="")
   link(rel="stylesheet", href="/ship-map.css")
 
 block layout-content
@@ -42,7 +42,7 @@ block layout-content
       p.legend-footnote Ship positions are representative training data for visualization purposes.
 
 block scripts
-  script(src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", integrity="sha512-1w2n+1sBCphPmS4GNzcRCjSc5MiNmiY6LHlH944sW1YHlzTH0PzZMfjNV8iPBUFeCFGXFqPbj0z2D2Go+ZtZAQ==", crossorigin="")
+  script(src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=", crossorigin="")
   script.
     window.shipLocations = !{JSON.stringify(shipLocations)};
   script(src="/ship-map.js")
