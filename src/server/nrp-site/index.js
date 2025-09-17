@@ -107,6 +107,75 @@ app.get("/admin-panel", secured, (req, res, next) => {
   });
 });
 
+const shipLocations = [
+  {
+    name: "USS Gerald R. Ford (CVN-78)",
+    type: "Aircraft Carrier",
+    status: "on-patrol",
+    latitude: 36.97,
+    longitude: -74.32,
+    location: "Western Atlantic Ocean",
+    speed: "24 kn",
+    course: "075°",
+    updated: "14:05 UTC"
+  },
+  {
+    name: "USS Zumwalt (DDG-1000)",
+    type: "Stealth Destroyer",
+    status: "on-patrol",
+    latitude: 33.42,
+    longitude: 141.88,
+    location: "Western Pacific Ocean",
+    speed: "19 kn",
+    course: "310°",
+    updated: "13:20 UTC"
+  },
+  {
+    name: "USS John P. Murtha (LPD-26)",
+    type: "Amphibious Transport Dock",
+    status: "in-port",
+    latitude: 32.684,
+    longitude: -117.173,
+    location: "Naval Base San Diego",
+    speed: "0 kn",
+    course: "Docked",
+    updated: "11:42 UTC"
+  },
+  {
+    name: "USS Virginia (SSN-774)",
+    type: "Fast Attack Submarine",
+    status: "on-patrol",
+    latitude: 64.82,
+    longitude: 5.62,
+    location: "Norwegian Sea",
+    speed: "17 kn",
+    course: "145°",
+    updated: "15:31 UTC"
+  },
+  {
+    name: "USS Freedom (LCS-1)",
+    type: "Littoral Combat Ship",
+    status: "maintenance",
+    latitude: 27.951,
+    longitude: -82.448,
+    location: "Tampa Shipyard",
+    speed: "0 kn",
+    course: "In Drydock",
+    updated: "09:18 UTC"
+  },
+  {
+    name: "USNS Mercy (T-AH-19)",
+    type: "Hospital Ship",
+    status: "in-port",
+    latitude: 33.741,
+    longitude: -118.216,
+    location: "Port of Los Angeles",
+    speed: "0 kn",
+    course: "Docked",
+    updated: "10:56 UTC"
+  }
+];
+
 app.get("/", (req, res) => {
   if (typeof req.isAuthenticated === "function" && req.isAuthenticated()) {
     return res.redirect("/admin-panel");
@@ -116,6 +185,13 @@ app.get("/", (req, res) => {
 
 app.get("/credits", (req, res) => {
   res.render("credits", { title: "Credits" });
+});
+
+app.get("/ship-tracker", secured, (req, res) => {
+  res.render("ship-tracker", {
+    title: "Fleet Operations Map",
+    shipLocations
+  });
 });
 
 /**

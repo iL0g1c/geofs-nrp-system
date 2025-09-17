@@ -1,0 +1,48 @@
+extends layout
+
+block variables
+  - var bodyClass = 'ship-map-body'
+
+block extra_styles
+  link(rel="stylesheet", href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", integrity="sha512-sA+e2atFlL8EJx1YgnSUZXoqBYwygJyI072QtdgQXl3k5ufADGWEcRrHBM1wYyM1Kzb0YhgrXLI4h2H2yx0Pg==", crossorigin="")
+  link(rel="stylesheet", href="/ship-map.css")
+
+block layout-content
+  main.ship-map-page
+    section.map-card
+      header.map-card__header
+        h1.map-card__title Fleet Operations Map
+        p.map-card__subtitle Monitor priority assets and their latest reported positions across the globe.
+      #ship-map
+      footer.map-card__footer
+        span.map-card__footnote Updated from aggregated fleet telemetry snapshots.
+    - const statusCounts = shipLocations.reduce((acc, ship) => {
+    -   const key = ship.status;
+    -   acc[key] = (acc[key] || 0) + 1;
+    -   return acc;
+    - }, {});
+    section.ship-map-legend
+      h2.legend-title Fleet Snapshot
+      .legend-grid
+        .legend-item
+          span.legend-dot.status-on-patrol
+          .legend-label
+            span.legend-label__title Active Patrol
+            span.legend-label__meta #{statusCounts['on-patrol'] || 0} ships underway
+        .legend-item
+          span.legend-dot.status-in-port
+          .legend-label
+            span.legend-label__title In Port
+            span.legend-label__meta #{statusCounts['in-port'] || 0} ships docked
+        .legend-item
+          span.legend-dot.status-maintenance
+          .legend-label
+            span.legend-label__title Maintenance
+            span.legend-label__meta #{statusCounts['maintenance'] || 0} ships in refit
+      p.legend-footnote Ship positions are representative training data for visualization purposes.
+
+block scripts
+  script(src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", integrity="sha512-1w2n+1sBCphPmS4GNzcRCjSc5MiNmiY6LHlH944sW1YHlzTH0PzZMfjNV8iPBUFeCFGXFqPbj0z2D2Go+ZtZAQ==", crossorigin="")
+  script.
+    window.shipLocations = !{JSON.stringify(shipLocations)};
+  script(src="/ship-map.js")
