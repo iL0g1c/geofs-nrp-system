@@ -1258,7 +1258,7 @@ $$('.tab').forEach(tab =>
 $$('.stat-card').forEach(card =>
     card.onclick = () => {
         const val = card.querySelector('.stat-value');
-        if (prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent); !== null) val.textContent = nv;
+        if (prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent) !== null) val.textContent = nv;
     }
 );
 
