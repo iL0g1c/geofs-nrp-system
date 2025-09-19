@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naval Command System - Dynamic Ships</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <title>GNS Admin - Dashboard</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -59,7 +60,7 @@
         .force-logo img { width: 100%; height: 100%; object-fit: cover;}
         .force-logo-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); position: relative;}
         .edit-icon {
-            position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); border-radius: 50%;
+            position: absolute; top: 4px; right: 4px; background: transparent; border-radius: 50%;
             width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transition: opacity 0.2s;
         }
         .force-logo:hover .edit-icon { opacity: 1;}
@@ -224,30 +225,24 @@
                     <div class="force-logo" id="force-logo">
                         <div class="force-logo-placeholder">
                             🇺🇸
-                            <div class="edit-icon">✏️</div>
+                            <div class="edit-icon">
+                                <span class="material-symbols-outlined">edit</span>
+                            </div>
                         </div>
                         <input type="file" id="logo-upload" class="hidden" accept="image/*">
                     </div>
                     <div class="force-name-container">
-                        <h2 class="force-name">🇺🇸 United States Navy</h2>
+                        <h2 class="force-name">United States Navy</h2>
                     </div>
                 </div>
                 <div class="force-stats">
                     <div class="stat-card" data-stat="ships">
-                        <div class="stat-value" id="ships-count">293</div>
+                        <div class="stat-value" id="ships-count">0</div>
                         <div class="stat-label">Ships</div>
                     </div>
-                    <div class="stat-card" data-stat="aircraft">
-                        <div class="stat-value" id="aircraft-count">3,700</div>
-                        <div class="stat-label">Aircraft</div>
-                    </div>
                     <div class="stat-card" data-stat="fleets">
-                        <div class="stat-value" id="fleets-count">74</div>
+                        <div class="stat-value" id="fleets-count">0</div>
                         <div class="stat-label">Fleets</div>
-                    </div>
-                    <div class="stat-card" data-stat="personnel">
-                        <div class="stat-value" id="personnel-count">332K</div>
-                        <div class="stat-label">Personnel</div>
                     </div>
                 </div>
                 <div class="force-details">
@@ -267,12 +262,11 @@
                         <span class="detail-label">Motto</span>
                         <span class="detail-value" id="motto-value">"Non sibi sed patriae"</span>
                     </div>
-                    <button class="edit-details-btn" id="edit-details-btn">✏️ Edit Force Details</button>
+                    <button class="edit-details-btn" id="edit-details-btn">Edit Force Details</button>
                 </div>
             </div>
         </div>
     </aside>
-
     <!-- Topbar -->
     <header class="topbar">
         <div class="topbar-content">
@@ -283,12 +277,11 @@
             </div>
             <div class="user-menu">
                 <button class="sign-out-btn">
-                    <span>🚪</span> Sign Out
+                    <span></span> Sign Out
                 </button>
             </div>
         </div>
     </header>
-
     <!-- Main Content -->
     <main class="main-content">
         <!-- Bases Content (Initially hidden) -->
@@ -299,7 +292,13 @@
                     <span>+</span> Add Base
                 </button>
             </div>
-            <div class="base-list" id="base-list"></div>
+            <div class="base-list" id="base-list">
+                <!-- Bases will be loaded here -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading bases...</p>
+                </div>
+            </div>
         </div>
         <!-- Ships Content (Initially visible) -->
         <div id="ships-content">
@@ -314,7 +313,13 @@
                     </button>
                 </div>
             </div>
-            <div class="ship-list" id="ship-list"></div>
+            <div class="ship-list" id="ship-list">
+                <!-- Ships will be loaded here -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading ships...</p>
+                </div>
+            </div>
         </div>
         <!-- Fleets Content (Initially hidden) -->
         <div id="fleets-content" class="hidden">
@@ -351,7 +356,6 @@
             </div>
         </div>
     </main>
-
     <!-- Edit Force Details Modal -->
     <div class="modal" id="edit-force-modal">
         <div class="modal-content">
@@ -421,7 +425,6 @@
             </div>
         </div>
     </div>
-
     <!-- Add/Edit Base Modal -->
     <div class="modal" id="base-modal">
         <div class="modal-content">
@@ -459,7 +462,6 @@
             </div>
         </div>
     </div>
-
     <!-- Add/Edit Ship Modal -->
     <div class="modal" id="ship-modal">
         <div class="modal-content">
@@ -506,38 +508,18 @@
         </div>
     </div>
     <script>
-const $ = sel => document.querySelector(sel), $$ = sel => document.querySelectorAll(sel);
-// Modal
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 class Modal {
-    constructor(element, closeBtns) {
-        this.element = element;
-        this.closeBtns = closeBtns;
-        this.isBound = false;
+    constructor(el, closeBtns = []) {
+        this.el = el;
+        closeBtns.forEach(b => b.onclick = () => this.close());
+        el.onclick = e => e.target === el && this.close();
+        document.addEventListener('keydown', e => e.key === 'Escape' && this.isOpen() && this.close());
     }
-    open() {
-        this.element.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-    close() {
-        this.element.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-    bind() {
-        if (this.isBound) return;
-        this.closeBtns.forEach(btn => btn.onclick = () => this.close());
-        this.element.onclick = e => e.target === this.element && this.close();
-        this._escHandler = e => { if (e.key === 'Escape' && this.element.classList.contains('show')) this.close(); };
-        document.addEventListener('keydown', this._escHandler);
-        this.isBound = true;
-    }
-    unbind() {
-        this.closeBtns.forEach(btn => btn.onclick = null);
-        this.element.onclick = null;
-        document.removeEventListener('keydown', this._escHandler);
-        this.isBound = false;
-    }
+    open() { this.el.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    close() { this.el.classList.remove('show'); document.body.style.overflow = ''; }
+    isOpen() { return this.el.classList.contains('show'); }
 }
-// StatusStrategy
 const StatusStrategy = {
     base: {
         operational: { cls: 'status-green', txt: 'Operational' },
@@ -552,51 +534,73 @@ const StatusStrategy = {
         decommissioned: { cls: 'status-red', txt: 'Decommissioned' }
     },
     get(type, status) {
-        let d = this[type][status];
-        if (d) return d;
-        return type === 'ship'
-            ? { cls: 'status-green', txt: 'Active' }
-            : { cls: 'status-green', txt: 'Operational' };
+        return this[type][status] || this[type][Object.keys(this[type])[0]];
     }
 };
-// TemplateFactory
 const TemplateFactory = {
     base: b => {
-        const status = StatusStrategy.get('base', b.status);
-        return `<div class="base-card" data-id="${b.id}">
+        const s = StatusStrategy.get('base', b.status);
+        return `
+<div class="base-card" data-id="${b.id}">
     <div class="base-card-header">
-        <h3>${b.name}</h3>
+        <h3 class="base-name">${b.name}</h3>
         <div class="base-actions">
-            <button class="btn btn-edit">✏️</button>
-            <button class="btn btn-danger">🗑️</button>
+            <button class="btn btn-edit">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn btn-danger">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
         </div>
     </div>
     <div class="base-details">
-        <div><strong>Location:</strong> ${b.location}</div>
-        <div><strong>Capacity:</strong> ${b.capacity}</div>
-        <div><strong>Status:</strong> <span class="status"><span class="status-dot ${status.cls}"></span> ${status.txt}</span></div>
+        <div class="base-detail">
+            <span class="base-detail-label">Location:</span>
+            <span class="base-detail-value">${b.location}</span>
+        </div>
+        <div class="base-detail">
+            <span class="base-detail-label">Capacity:</span>
+            <span class="base-detail-value">${b.capacity}</span>
+        </div>
+        <div class="base-detail">
+            <span class="base-detail-label">Status:</span>
+            <span class="base-detail-value status"><span class="status-dot ${s.cls}"></span> ${s.txt}</span>
+        </div>
     </div>
 </div>`;
     },
     ship: s => {
-        const status = StatusStrategy.get('ship', s.status);
-        return `<div class="ship-card" data-id="${s.id}">
+        const st = StatusStrategy.get('ship', s.status);
+        return `
+<div class="ship-card" data-id="${s.id}">
     <div class="ship-card-header">
-        <h3>${s.name}</h3>
+        <h3 class="ship-name">${s.name}</h3>
         <div class="ship-actions">
-            <button class="btn btn-edit">✏️</button>
-            <button class="btn btn-danger">🗑️</button>
+            <button class="btn btn-edit">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn btn-danger">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
         </div>
     </div>
     <div class="ship-details">
-        <div><strong>Class:</strong> <span class="ship-class-badge">${s.class}</span></div>
-        <div><strong>Hull:</strong> ${s.hull}</div>
-        <div><strong>Status:</strong> <span class="status"><span class="status-dot ${status.cls}"></span> ${status.txt}</span></div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Class:</span>
+            <span class="ship-detail-value"><span class="ship-class-badge">${s.class}</span></span>
+        </div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Hull Number:</span>
+            <span class="ship-detail-value">${s.hull}</span>
+        </div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Status:</span>
+            <span class="ship-detail-value status"><span class="status-dot ${st.cls}"></span> ${st.txt}</span>
+        </div>
     </div>
 </div>`;
     }
 };
-// ListRenderer
 const ListRenderer = {
     render(type, list, container) {
         container.innerHTML = list.length
@@ -608,40 +612,84 @@ const ListRenderer = {
             </div>`;
     }
 };
-// DataStore
 class DataStore {
     constructor() {
-        this._bases = [
-            { id: 1, name: "Norfolk Naval Station", location: "Virginia, USA", capacity: "12,000 personnel", status: "operational" },
-            { id: 2, name: "Pearl Harbor", location: "Hawaii, USA", capacity: "15,000 personnel", status: "operational" },
-            { id: 3, name: "Guantanamo Bay", location: "Cuba", capacity: "8,000 personnel", status: "limited" }
-        ];
-        this._ships = [
-            { id: 1, name: "USS Gerald R. Ford", class: "Aircraft Carrier", hull: "CVN-78", status: "active" },
-            { id: 2, name: "USS Zumwalt", class: "Destroyer", hull: "DDG-1000", status: "active" },
-            { id: 3, name: "USS Virginia", class: "Submarine", hull: "SSN-774", status: "active" }
-        ];
-        this._nextBaseId = 4;
-        this._nextShipId = 4;
+        this._bases = [];
+        this._ships = [];
+        this._nextBaseId = 1;
+        this._nextShipId = 1;
     }
+    
     bases() { return this._bases; }
     ships() { return this._ships; }
-    addBase(b) { this._bases.push({ ...b, id: this._nextBaseId++ }); }
-    updateBase(b) { this._bases[this._bases.findIndex(x => x.id === b.id)] = b; }
-    removeBase(id) { this._bases = this._bases.filter(b => b.id !== id); }
-    addShip(s) { this._ships.push({ ...s, id: this._nextShipId++ }); }
-    updateShip(s) { this._ships[this._ships.findIndex(x => x.id === s.id)] = s; }
-    removeShip(id) { this._ships = this._ships.filter(s => s.id !== id); }
+    
+    _update(list, obj) {
+        const index = list.findIndex(x => x.id === obj.id);
+        if (index !== -1) {
+            list[index] = obj;
+        }
+    }
+    
+    _remove(list, id) {
+        return list.filter(x => x.id !== id);
+    }
+    
+    addBase(b) {
+        const newBase = { ...b, id: this._nextBaseId++ };
+        this._bases.push(newBase);
+        return newBase;
+    }
+    
+    updateBase(b) {
+        this._update(this._bases, b);
+    }
+    
+    removeBase(id) {
+        this._bases = this._remove(this._bases, id);
+    }
+    
+    addShip(s) {
+        const newShip = { ...s, id: this._nextShipId++ };
+        this._ships.push(newShip);
+        return newShip;
+    }
+    
+    updateShip(s) {
+        this._update(this._ships, s);
+    }
+    
+    removeShip(id) {
+        this._ships = this._remove(this._ships, id);
+    }
+    
+    async loadData() {
+        try {
+            const [basesResponse, shipsResponse] = await Promise.all([
+                fetch('bases.json'),
+                fetch('ships.json')
+            ]);
+            
+            if (basesResponse.ok) {
+                this._bases = await basesResponse.json();
+                this._nextBaseId = Math.max(0, ...this._bases.map(b => b.id)) + 1;
+            }
+            
+            if (shipsResponse.ok) {
+                this._ships = await shipsResponse.json();
+                this._nextShipId = Math.max(0, ...this._ships.map(s => s.id)) + 1;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error loading data:', error);
+            return false;
+        }
+    }
 }
-
-// ---- App Initialization and Event Wiring ----
 const store = new DataStore();
 const editForceModal = new Modal($('#edit-force-modal'), [$('#close-force-modal'), $('#cancel-force-details')]);
 const baseModal = new Modal($('#base-modal'), [$('#close-base-modal'), $('#cancel-base')]);
 const shipModal = new Modal($('#ship-modal'), [$('#close-ship-modal'), $('#cancel-ship')]);
-editForceModal.bind(); baseModal.bind(); shipModal.bind();
-
-// Force Logo Upload
 $('#force-logo').onclick = () => $('#logo-upload').click();
 $('#logo-upload').onchange = function() {
     if (this.files[0]) {
@@ -650,107 +698,163 @@ $('#logo-upload').onchange = function() {
         r.readAsDataURL(this.files[0]);
     }
 };
-// Edit Force Details
 $('#edit-details-btn').onclick = () => {
-    $('#edit-force-name').value = $('.force-name').textContent.replace('🇺🇸 ', '');
-    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e =>
-        $(`#edit-${e.split("-")[0]}`).value = $(`#${e}`).textContent
+    $('#edit-force-name').value = $('.force-name').textContent.replace(/^🇺🇸\s*/, '');
+    ['ships','aircraft','fleets','personnel','commander','established','headquarters'].forEach(f => 
+        $(`#edit-${f}`).value = $(`#${f}-count, #${f}-value`.split(', ').map(sel => $(sel)).find(el=>el)?.textContent)
     );
-    $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g, '');
+    $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g,'');
     editForceModal.open();
 };
 $('#save-force-details').onclick = () => {
     $('.force-name').innerHTML = `🇺🇸 ${$('#edit-force-name').value}`;
-    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e =>
-        $(`#${e}`).textContent = $(`#edit-${e.split("-")[0]}`).value
-    );
+    ['ships','aircraft','fleets','personnel','commander','established','headquarters'].forEach(f => {
+        const v = $(`#edit-${f}`).value;
+        $(`#${f}-count, #${f}-value`.split(', ').map(sel => $(sel)).find(el=>el)).textContent = v;
+    });
     $('#motto-value').textContent = `"${$('#edit-motto').value}"`;
     editForceModal.close();
 };
-// Tabs
-$$('.tab').forEach(tab =>
-    tab.onclick = () => {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        ['bases','ships','fleets'].forEach(id => $(`#${id}-content`).classList.add('hidden'));
-        $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
-    }
-);
-$('.force-stats').addEventListener("click", e => {
-    const card = e.target.closest('.stat-card');
-    if (!card) return;
-    const val = card.querySelector('.stat-value');
-    if (!val) return;
-    const nv = prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent);
-    if (nv !== null) val.textContent = nv;
+$$('.tab').forEach(tab => tab.onclick = () => {
+    $$('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    ['bases','ships','fleets'].forEach(id => $(`#${id}-content`).classList.add('hidden'));
+    $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
+    
+    updateStatsFromContent();
 });
-// Bases CRUD
-function renderBases() { ListRenderer.render('base', store.bases(), $('#base-list')); }
-renderBases();
-$('#base-list').onclick = e => {
-    const card = e.target.closest('.base-card');
-    if (!card) return;
-    const id = +card.dataset.id;
-    if (e.target.classList.contains('btn-edit')) {
-        const b = store.bases().find(b => b.id === id);
-        $('#base-modal-title').textContent = 'Edit Base';
-        ['id', 'name', 'location', 'capacity', 'status'].forEach(f => $(`#base-${f}`).value = b[f]);
-        baseModal.open();
-    }
-    if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
-        store.removeBase(id); renderBases();
-    }
-};
-$('#add-base-btn').onclick = () => {
-    $('#base-modal-title').textContent = 'Add Base';
-    ['id', 'name', 'location', 'capacity'].forEach(f => $(`#base-${f}`).value = '');
-    $('#base-status').value = 'operational';
-    baseModal.open();
-};
-$('#save-base').onclick = () => {
-    const id = $('#base-id').value ? +$('#base-id').value : null,
-        name = $('#base-name').value.trim(),
-        location = $('#base-location').value.trim(),
-        capacity = $('#base-capacity').value.trim(),
-        status = $('#base-status').value;
-    if (!name || !location || !capacity) return alert('Fill all fields');
-    id ? store.updateBase({ id, name, location, capacity, status }) : store.addBase({ name, location, capacity, status });
-    renderBases(); baseModal.close();
-};
-// Ships CRUD
-function renderShips() { ListRenderer.render('ship', store.ships(), $('#ship-list')); }
-renderShips();
+const renderShips = () => ListRenderer.render('ship', store.ships(), $('#ship-list'));
 $('#ship-list').onclick = e => {
     const card = e.target.closest('.ship-card');
     if (!card) return;
+    
     const id = +card.dataset.id;
     if (e.target.classList.contains('btn-edit')) {
-        const s = store.ships().find(s => s.id === id);
+        const s = store.ships().find(x => x.id === id);
+        ['id','name','class','hull','status'].forEach(f => $(`#ship-${f}`).value = s[f] || '');
         $('#ship-modal-title').textContent = 'Edit Ship';
-        ['id', 'name', 'class', 'hull', 'status'].forEach(f => $(`#ship-${f}`).value = s[f]);
         shipModal.open();
+        return;
     }
+    
     if (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) {
-        store.removeShip(id); renderShips();
+        store.removeShip(id);
+        renderShips();
+        updateStatsFromContent();
     }
 };
 $('#add-ship-btn').onclick = () => {
-    $('#ship-modal-title').textContent = 'Add Ship';
-    ['ship-id', 'ship-name', 'ship-hull'].forEach(f => $(`#${f}`).value = '');
+    ['ship-id','ship-name','ship-hull'].forEach(f => $(`#${f}`).value = '');
     $('#ship-class').value = 'Aircraft Carrier';
     $('#ship-status').value = 'active';
+    $('#ship-modal-title').textContent = 'Add Ship';
     shipModal.open();
 };
 $('#save-ship').onclick = () => {
-    const id = $('#ship-id').value ? +$('#ship-id').value : null,
-        name = $('#ship-name').value.trim(),
-        cls = $('#ship-class').value,
-        hull = $('#ship-hull').value.trim(),
-        status = $('#ship-status').value;
-    if (!name || !hull) return alert('Fill all fields');
-    id ? store.updateShip({ id, name, class: cls, hull, status }) : store.addShip({ name, class: cls, hull, status });
-    renderShips(); shipModal.close();
+    const s = {
+        id: $('#ship-id').value ? +$('#ship-id').value : null,
+        name: $('#ship-name').value.trim(),
+        class: $('#ship-class').value,
+        hull: $('#ship-hull').value.trim(),
+        status: $('#ship-status').value
+    };
+    
+    if (!s.name || !s.hull) {
+        alert('Fill all fields');
+        return;
+    }
+    
+    if (s.id) {
+        store.updateShip(s);
+    } else {
+        store.addShip(s);
+    }
+    
+    renderShips();
+    shipModal.close();
+    updateStatsFromContent();
 };
+const renderBases = () => ListRenderer.render('base', store.bases(), $('#base-list'));
+$('#base-list').onclick = e => {
+    const card = e.target.closest('.base-card');
+    if (!card) return;
+    
+    const id = +card.dataset.id;
+    if (e.target.classList.contains('btn-edit')) {
+        const b = store.bases().find(x => x.id === id);
+        ['id','name','location','capacity','status'].forEach(f => $(`#base-${f}`).value = b[f] || '');
+        $('#base-modal-title').textContent = 'Edit Base';
+        baseModal.open();
+        return;
+    }
+    
+    if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
+        store.removeBase(id);
+        renderBases();
+        updateStatsFromContent();
+    }
+};
+$('#add-base-btn').onclick = () => {
+    ['id','name','location','capacity'].forEach(f => $(`#base-${f}`).value = '');
+    $('#base-status').value = 'operational';
+    $('#base-modal-title').textContent = 'Add Base';
+    baseModal.open();
+};
+$('#save-base').onclick = () => {
+    const b = ['id','name','location','capacity','status'].reduce((o,f) => {
+        o[f] = $(`#base-${f}`).value.trim();
+        return o;
+    }, {});
+    
+    if (!b.name || !b.location || !b.capacity) {
+        alert('Fill all fields');
+        return;
+    }
+    
+    if (b.id) {
+        store.updateBase(b);
+    } else {
+        store.addBase(b);
+    }
+    
+    renderBases();
+    baseModal.close();
+    updateStatsFromContent();
+};
+const updateStatsFromContent = () => {
+    const shipsCount = $('#ship-list').children.length;
+    const actualShipsCount = $('#ship-list').querySelector('.empty-state') ? 0 : shipsCount;
+    $('#ships-count').textContent = actualShipsCount;
+
+    const fleetsContent = $('#fleets-content');
+    let fleetsCount = 0;
+    if (fleetsContent) {
+        const fleetCards = fleetsContent.querySelectorAll('.grid > .card');
+        fleetsCount = fleetCards.length;
+    }
+    $('#fleets-count').textContent = fleetsCount;
+};
+const initApp = async () => {
+    const dataLoaded = await store.loadData();
+    
+    if (dataLoaded) {
+        renderBases();
+        renderShips();
+        
+        updateStatsFromContent();
+    } else {
+        $('#base-list').innerHTML = `<div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>Failed to load bases and ships data.</p>
+        </div>`;
+        
+        $('#ship-list').innerHTML = `<div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>Failed to load bases and ships data.</p>
+        </div>`;
+    }
+};
+document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
