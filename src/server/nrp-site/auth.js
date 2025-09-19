@@ -7,6 +7,8 @@ const express = require("express");
 const passport = require("passport");
 const querystring = require("querystring");
 
+const { buildAbsoluteUrl } = require("./request-context");
+
 require("dotenv").config();
 
 const defaultApplyBasePath = (pathname = "/") =>
@@ -61,13 +63,8 @@ const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
         return next(err);
       }
 
-      const host = req.get("host");
-      const protocol = req.protocol || "http";
-      const returnToPath = applyBasePath("/") || "/";
-      const baseUrl = host
-        ? new URL(returnToPath || "/", `${protocol}://${host}`)
-        : null;
-      const returnTo = baseUrl ? baseUrl.toString() : returnToPath || "/";
+      const returnTo =
+        buildAbsoluteUrl(req, "/", applyBasePath) || applyBasePath("/") || "/";
 
       const logoutURL = new URL(
         `https://${process.env.AUTH0_DOMAIN}/v2/logout`

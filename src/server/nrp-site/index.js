@@ -13,6 +13,11 @@ const Auth0Strategy = require("passport-auth0");
 require("dotenv").config();
 
 const createAuthRouter = require("./auth");
+const {
+  buildAbsoluteUrl,
+  getRequestProtocol,
+  getRequestHost
+} = require("./request-context");
 
 /**
  * App Variables
@@ -78,10 +83,13 @@ const session = {
   saveUninitialized: false
 };
 
-if (app.get("env") === "production" && app.get("trust proxy")) {
-  // Serve secure cookies behind HTTPS (including reverse proxies)
-  session.cookie.secure = true;
+if (app.get("env") === "production") {
   session.cookie.sameSite = "lax";
+
+  if (app.get("trust proxy")) {
+    // Let express-session detect HTTPS from the current request/proxy headers.
+    session.cookie.secure = "auto";
+  }
 }
 
 /**
@@ -118,19 +126,10 @@ app.locals.applyBasePath = applyBasePath;
 app.use((req, res, next) => {
   res.locals.basePath = basePath;
   res.locals.applyBasePath = applyBasePath;
-  res.locals.absoluteUrl = (pathname = "/") => {
-    const host = req.get("host");
-    if (!host) {
-      return applyBasePath(pathname);
-    }
-
-    const protocol = req.protocol || "http";
-    try {
-      return new URL(applyBasePath(pathname), `${protocol}://${host}`).toString();
-    } catch (err) {
-      return applyBasePath(pathname);
-    }
-  };
+  res.locals.requestProtocol = getRequestProtocol(req);
+  res.locals.requestHost = getRequestHost(req);
+  res.locals.absoluteUrl = (pathname = "/") =>
+    buildAbsoluteUrl(req, pathname, applyBasePath);
   next();
 });
 
