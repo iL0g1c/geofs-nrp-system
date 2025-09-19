@@ -19,6 +19,21 @@ const authRouter = require("./auth");
  */
 const app = express();
 const port = process.env.PORT || "8000";
+const host = process.env.HOST || "0.0.0.0";
+
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy) {
+  const normalized = trustProxy.trim().toLowerCase();
+  if (normalized === "true" || normalized === "1") {
+    app.set("trust proxy", 1);
+  } else if (normalized === "false" || normalized === "0") {
+    app.set("trust proxy", false);
+  } else {
+    app.set("trust proxy", trustProxy);
+  }
+} else if (app.get("env") === "production") {
+  app.set("trust proxy", 1);
+}
 
 /**
  * Session Configuration
@@ -31,9 +46,10 @@ const session = {
   saveUninitialized: false
 };
 
-if (app.get("env") === "production") {
-  // Serve secure cookies, requires HTTPS
-  session.cookie.secure = false;
+if (app.get("env") === "production" && app.get("trust proxy")) {
+  // Serve secure cookies behind HTTPS (including reverse proxies)
+  session.cookie.secure = true;
+  session.cookie.sameSite = "lax";
 }
 
 /**
@@ -44,7 +60,7 @@ const strategy = new Auth0Strategy(
     domain: process.env.AUTH0_DOMAIN,
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL: process.env.AUTH0_CALLBACK_URL
+    callbackURL: process.env.AUTH0_CALLBACK_URL || "/callback"
   },
   function(accessToken, refreshToken, extraParams, profile, done) {
     /**
@@ -197,6 +213,6 @@ app.get("/ship-tracker", secured, (req, res) => {
 /**
  * Server Activation
  */
-app.listen(port, () => {
-  console.log(`Listening to requests on http://localhost:${port}`);
+app.listen(port, host, () => {
+  console.log(`Listening to requests on ${host}:${port}`);
 });
