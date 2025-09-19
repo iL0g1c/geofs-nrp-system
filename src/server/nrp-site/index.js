@@ -12,7 +12,7 @@ const Auth0Strategy = require("passport-auth0");
 
 require("dotenv").config();
 
-const authRouter = require("./auth");
+const createAuthRouter = require("./auth");
 
 /**
  * App Variables
@@ -20,6 +20,38 @@ const authRouter = require("./auth");
 const app = express();
 const port = process.env.PORT || "8000";
 const host = process.env.HOST || "0.0.0.0";
+
+const normalizeBasePath = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed || trimmed === "/") {
+    return "";
+  }
+
+  const withLeading = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return withLeading.endsWith("/") ? withLeading.slice(0, -1) : withLeading;
+};
+
+const basePath = normalizeBasePath(process.env.BASE_PATH);
+
+const applyBasePath = (pathname = "/") => {
+  const safePath = pathname && typeof pathname === "string" ? pathname : "/";
+  const normalized = safePath.startsWith("/") ? safePath : `/${safePath}`;
+
+  if (!basePath) {
+    return normalized === "//" ? "/" : normalized;
+  }
+
+  if (normalized === "/") {
+    return basePath;
+  }
+
+  return `${basePath}${normalized}`.replace(/\/{2,}/g, "/");
+};
 
 const trustProxy = process.env.TRUST_PROXY;
 if (trustProxy) {
@@ -80,7 +112,33 @@ const strategy = new Auth0Strategy(
  */
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
-app.use(express.static(path.join(__dirname, "public")));
+app.locals.basePath = basePath;
+app.locals.applyBasePath = applyBasePath;
+
+app.use((req, res, next) => {
+  res.locals.basePath = basePath;
+  res.locals.applyBasePath = applyBasePath;
+  res.locals.absoluteUrl = (pathname = "/") => {
+    const host = req.get("host");
+    if (!host) {
+      return applyBasePath(pathname);
+    }
+
+    const protocol = req.protocol || "http";
+    try {
+      return new URL(applyBasePath(pathname), `${protocol}://${host}`).toString();
+    } catch (err) {
+      return applyBasePath(pathname);
+    }
+  };
+  next();
+});
+
+if (basePath) {
+  app.use(basePath, express.static(path.join(__dirname, "public")));
+} else {
+  app.use(express.static(path.join(__dirname, "public")));
+}
 
 app.use(expressSession(session));
 
@@ -102,7 +160,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/", authRouter);
+const authRouter = createAuthRouter({ applyBasePath });
+
+app.use(basePath || "/", authRouter);
 
 /**
  * Routes Definitions
@@ -112,10 +172,12 @@ const secured = (req, res, next) => {
     return next();
   }
   req.session.returnTo = req.originalUrl;
-  res.redirect("/login");
+  res.redirect(applyBasePath("/login"));
 };
 
-app.get("/admin-panel", secured, (req, res, next) => {
+const router = express.Router();
+
+router.get("/admin-panel", secured, (req, res, next) => {
   const { _raw, _json, ...userProfile } = req.user;
   res.render("admin-panel", {
     title: "Admin Panel",
@@ -192,23 +254,25 @@ const shipLocations = [
   }
 ];
 
-app.get("/", (req, res) => {
+router.get("/", (req, res) => {
   if (typeof req.isAuthenticated === "function" && req.isAuthenticated()) {
-    return res.redirect("/admin-panel");
+    return res.redirect(applyBasePath("/admin-panel"));
   }
   res.render("index", { title: "Home" });
 });
 
-app.get("/credits", (req, res) => {
+router.get("/credits", (req, res) => {
   res.render("credits", { title: "Credits" });
 });
 
-app.get("/ship-tracker", secured, (req, res) => {
+router.get("/ship-tracker", secured, (req, res) => {
   res.render("ship-tracker", {
     title: "Fleet Operations Map",
     shipLocations
   });
 });
+
+app.use(basePath || "/", router);
 
 /**
  * Server Activation

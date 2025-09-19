@@ -6,7 +6,7 @@ block variables
   - var bodyClass = 'admin-dashboard'
 
 block extra_styles
-  link(rel="stylesheet", href="/admin-dashboard.css")
+  link(rel="stylesheet", href=applyBasePath('/admin-dashboard.css'))
 
 block layout-content
   aside#sidebar.sidebar
@@ -54,7 +54,7 @@ block layout-content
         .tab.active(data-tab="ships") Ships
         .tab(data-tab="fleets") Fleets
       .user-menu
-        a.sign-out-btn(href="/logout")
+        a.sign-out-btn(href=applyBasePath('/logout'))
           span 🚪
           |  Sign Out
   main.main-content
@@ -127,7 +127,7 @@ block layout-content
           a.design-ship-btn(href="", target="_blank")
             span
             |  Design Ships
-          a.map-view-btn(href="/ship-tracker")
+          a.map-view-btn(href=applyBasePath('/ship-tracker'))
             span 🗺️
             |  Fleet Map
           button#add-ship-btn.add-ship-btn
@@ -330,4 +330,4 @@ block layout-content
         button#save-ship.btn.btn-primary Save Ship
 
 block scripts
-  script(src="/admin-dashboard.js")
+  script(src=applyBasePath('/admin-dashboard.js'))
