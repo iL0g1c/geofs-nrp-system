@@ -59,15 +59,9 @@ router.get("/logout", (req, res, next) => {
       return next(err);
     }
 
-    let returnTo = req.protocol + "://" + req.hostname;
-    const port = req.connection.localPort;
-
-    if (port !== undefined && port !== 80 && port !== 443) {
-      returnTo =
-        process.env.NODE_ENV === "production"
-          ? `${returnTo}/`
-          : `${returnTo}:${port}/`;
-    }
+    const host = req.get("host");
+    const baseUrl = new URL("/", `${req.protocol}://${host}`);
+    const returnTo = baseUrl.toString();
 
     const logoutURL = new URL(
       `https://${process.env.AUTH0_DOMAIN}/v2/logout`
