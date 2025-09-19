@@ -676,6 +676,14 @@ $$('.tab').forEach(tab =>
         $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
     }
 );
+$('.force-stats').addEventListener("click", e => {
+    const card = e.target.closest('.stat-card');
+    if (!card) return;
+    const val = card.querySelector('.stat-value');
+    if (!val) return;
+    const nv = prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent);
+    if (nv !== null) val.textContent = nv;
+});
 // Bases CRUD
 function renderBases() { ListRenderer.render('base', store.bases(), $('#base-list')); }
 renderBases();
