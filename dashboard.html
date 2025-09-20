@@ -84,6 +84,9 @@
         .main-content {
             flex: 1; margin-left: var(--sidebar-width); padding: 24px; margin-top: var(--topbar-height); transition: margin-left .3s;
         }
+        .section {
+            margin-bottom: 40px;
+        }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;}
         .section-title { font-size: 24px; font-weight: 500;}
         .card {
@@ -271,8 +274,8 @@
     <header class="topbar">
         <div class="topbar-content">
             <div class="tabs">
-                <div class="tab" data-tab="bases">Bases</div>
                 <div class="tab active" data-tab="ships">Ships</div>
+                <div class="tab" data-tab="bases">Bases</div>
                 <div class="tab" data-tab="fleets">Fleets</div>
             </div>
             <div class="user-menu">
@@ -284,28 +287,12 @@
     </header>
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Bases Content (Initially hidden) -->
-        <div id="bases-content" class="hidden">
+        <!-- Ships Section -->
+        <div class="section" id="ships-section">
             <div class="section-header">
-                <h2 class="section-title">Naval Bases</h2>
-                <button class="add-base-btn" id="add-base-btn">
-                    <span>+</span> Add Base
-                </button>
-            </div>
-            <div class="base-list" id="base-list">
-                <!-- Bases will be loaded here -->
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Loading bases...</p>
-                </div>
-            </div>
-        </div>
-        <!-- Ships Content (Initially visible) -->
-        <div id="ships-content">
-            <div class="section-header">
-                <h2 class="section-title">Naval Ships</h2>
+                <h2 class="section-title">Ships</h2>
                 <div class="section-buttons">
-                    <a href="" target="_blank" class="design-ship-btn">
+                    <a href="shipDesigner.html" target="_blank" class="design-ship-btn">
                         <span></span> Design Ships
                     </a>
                     <button class="add-ship-btn" id="add-ship-btn">
@@ -314,17 +301,33 @@
                 </div>
             </div>
             <div class="ship-list" id="ship-list">
-                <!-- Ships will be loaded here -->
                 <div class="loading">
                     <div class="spinner"></div>
                     <p>Loading ships...</p>
                 </div>
             </div>
         </div>
-        <!-- Fleets Content (Initially hidden) -->
-        <div id="fleets-content" class="hidden">
+        
+        <!-- Bases Section -->
+        <div class="section" id="bases-section">
             <div class="section-header">
-                <h2 class="section-title">Naval Fleets</h2>
+                <h2 class="section-title">Bases</h2>
+                <button class="add-base-btn" id="add-base-btn">
+                    <span>+</span> Add Base
+                </button>
+            </div>
+            <div class="base-list" id="base-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading bases...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fleets Section -->
+        <div class="section" id="fleets-section">
+            <div class="section-header">
+                <h2 class="section-title">Fleets</h2>
             </div>
             <div class="grid">
                 <div class="card">
@@ -718,8 +721,13 @@ $('#save-force-details').onclick = () => {
 $$('.tab').forEach(tab => tab.onclick = () => {
     $$('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    ['bases','ships','fleets'].forEach(id => $(`#${id}-content`).classList.add('hidden'));
-    $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
+    
+    // Scroll to the selected section
+    const sectionId = tab.dataset.tab;
+    const section = $(`#${sectionId}-section`);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
     
     updateStatsFromContent();
 });
@@ -826,7 +834,7 @@ const updateStatsFromContent = () => {
     const actualShipsCount = $('#ship-list').querySelector('.empty-state') ? 0 : shipsCount;
     $('#ships-count').textContent = actualShipsCount;
 
-    const fleetsContent = $('#fleets-content');
+    const fleetsContent = $('#fleets-section');
     let fleetsCount = 0;
     if (fleetsContent) {
         const fleetCards = fleetsContent.querySelectorAll('.grid > .card');
