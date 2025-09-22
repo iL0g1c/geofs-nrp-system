@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naval Ship Design System</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-red: #da3633;
+            --accent-yellow: #d29922;
+            --btn-primary: #238636;
+            --btn-secondary: #30363d;
+            --sidebar-width: 280px;
+            --topbar-height: 60px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            background-color: var(--bg-card);
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        .topbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 16px;
+        }
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .nav-link:hover {
+            background-color: var(--btn-secondary);
+        }
+        .nav-link.active {
+            background-color: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .sign-out-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: rgba(218, 54, 51, 0.1);
+            border-color: rgba(238, 45, 41, 0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            margin-top: var(--topbar-height);
+        }
+        .primary-design-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .form-section {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-section-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+        .form-col {
+            flex: 1;
+        }
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .ship-image-preview {
+            width: 200px;
+            height: 120px;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+        }
+        .ship-image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        .ship-image-placeholder {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .sensor-slots, .weapon-slots { margin-top: 0; }
+        .sensor-slot, .weapon-slot {
+            background-color: rgba(48, 54, 61, 0.3);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+        .sensor-slot-header, .weapon-slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .sensor-slot-title, .weapon-slot-title {
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+        .add-sensor-slot, .add-weapon-slot {
+            background-color: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 0;
+        }
+        .add-sensor-slot:hover, .add-weapon-slot:hover {
+            background-color: #2ea043;
+        }
+        .remove-sensor-slot, .remove-weapon-slot {
+            background: none;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            font-size: 18px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .remove-sensor-slot:hover, .remove-weapon-slot:hover {
+            background-color: rgba(218, 54, 51, 0.1);
+        }
+        .predefined-select {
+            margin-bottom: 8px;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--btn-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background-color: #383e47;
+        }
+        .btn-primary {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+        }
+        .btn-primary:hover {
+            background-color: #2ea043;
+        }
+        @media (max-width: 992px) {
+            .primary-design-form { padding: 16px; }
+        }
+        @media (max-width: 768px) {
+            .form-row { flex-direction: column; gap: 16px; }
+            .topbar { padding: 0 12px; }
+            .form-section { padding-bottom: 8px; }
+            .primary-design-form { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="topbar-content">
+            <div class="logo"><span>⚓</span> GNA Admin</div>
+            <nav class="nav-links" aria-label="Main">
+                <a href="#" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link active">Designs</a>
+                <a href="#" class="nav-link">Specifications</a>
+                <a href="#" class="nav-link">Projects</a>
+            </nav>
+            <div class="user-menu">
+                <button class="sign-out-btn"><span>🚪</span> Sign Out</button>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="main-content">
+        <form class="primary-design-form" autocomplete="off" id="design-form">
+            <section class="form-section">
+                <h2 class="form-section-title">⚓ Create New Ship Design</h2>
+                <div class="form-group">
+                    <label class="form-label" for="design-name">Ship Class Name</label>
+                    <input type="text" id="design-name" class="form-input" placeholder="Enter class name" required>
+                </div>
+                <div class="image-upload-container">
+                    <div class="ship-image-preview" id="ship-image-preview">
+                        <div class="ship-image-placeholder">No image uploaded</div>
+                    </div>
+                    <div class="file-input-wrapper">
+                        <button type="button" class="btn btn-secondary" id="upload-btn">Upload Ship Image</button>
+                        <input type="file" id="ship-image-upload" accept="image/*">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-type">Type</label>
+                            <select id="design-type" class="form-input">
+                                <option value="Aircraft Carrier">Aircraft Carrier</option>
+                                <option value="Destroyer">Destroyer</option>
+                                <option value="Cruiser">Cruiser</option>
+                                <option value="Submarine">Submarine</option>
+                                <option value="Amphibious">Amphibious</option>
+                                <option value="Frigate">Frigate</option>
+                                <option value="Patrol">Patrol</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-displacement">Displacement (tons)</label>
+                            <input type="number" id="design-displacement" class="form-input" placeholder="Enter displacement">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-length">Length (m)</label>
+                            <input type="number" id="design-length" class="form-input" placeholder="Enter length">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label" for="design-beam">Beam (m)</label>
+                            <input type="number" id="design-beam" class="form-input" placeholder="Enter beam">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="design-propulsion">Propulsion</label>
+                    <input type="text" id="design-propulsion" class="form-input" placeholder="Enter propulsion details">
+                </div>
+            </section>
+            <section class="form-section">
+                <h3 class="form-section-title">📡 Sensors</h3>
+                <div class="sensor-slots" id="sensor-slots"></div>
+                <button type="button" class="add-sensor-slot" id="add-sensor-slot"><span>+</span> Add Sensor</button>
+            </section>
+            <section class="form-section">
+                <h3 class="form-section-title">🔫 Armament</h3>
+                <div class="weapon-slots" id="weapon-slots"></div>
+                <button type="button" class="add-weapon-slot" id="add-weapon-slot"><span>+</span> Add Weapon</button>
+            </section>
+            <div class="form-actions">
+                <button type="button" class="btn" id="reset-design">Reset</button>
+                <button type="submit" class="btn btn-primary" id="save-design">Save Design</button>
+            </div>
+        </form>
+    </main>
+    <script>
+    // --- DATA ---
+    const predefinedWeapons = {
+        "Mk 45": { name: "Mk 45 5-inch Gun", quantity: 1, caliber: "5-inch", description: "Lightweight naval gun system" },
+        "Mk 41": { name: "Mk 41 VLS", quantity: 16, caliber: "Cell launcher", description: "Vertical Launching System for missiles" },
+        "Phalanx": { name: "Phalanx CIWS", quantity: 2, caliber: "20mm", description: "Close-in weapon system for defense" },
+        "Harpoon": { name: "Harpoon Missile", quantity: 8, caliber: "Anti-ship missile", description: "All-weather, over-the-horizon, anti-ship missile" },
+        "Tomahawk": { name: "Tomahawk Missile", quantity: 16, caliber: "Cruise missile", description: "Subsonic cruise missile for long-range strikes" },
+        "Standard Missile": { name: "Standard Missile", quantity: 32, caliber: "Surface-to-air missile", description: "Medium-range surface-to-air missile" },
+        "Mk 48": { name: "Mk 48 Torpedo", quantity: 6, caliber: "Heavyweight torpedo", description: "Advanced lightweight torpedo" }
+    };
+    const predefinedSensors = {
+        "AN/SPY-6": { name: "AN/SPY-6", type: "Radar", range: 400, description: "Air and missile defense radar" },
+        "AN/SPQ-9B": { name: "AN/SPQ-9B", type: "Radar", range: 200, description: "X-band radar for surface search and fire control" },
+        "AN/SQQ-89": { name: "AN/SQQ-89", type: "Sonar", range: 20, description: "Underwater warfare combat system" },
+        "AN/BYG-1": { name: "AN/BYG-1", type: "Sonar", range: 30, description: "Advanced fire control system for submarines" },
+        "SLQ-32": { name: "SLQ-32", type: "ESM", range: 150, description: "Electronic warfare suite" },
+        "AN/SPS-49": { name: "AN/SPS-49", type: "Radar", range: 300, description: "Long-range air search radar" }
+    };
+    // --- DOM ---
+    const designNameInput = document.getElementById('design-name');
+    const shipImageUpload = document.getElementById('ship-image-upload');
+    const shipImagePreview = document.getElementById('ship-image-preview');
+    const designTypeInput = document.getElementById('design-type');
+    const designDisplacementInput = document.getElementById('design-displacement');
+    const designLengthInput = document.getElementById('design-length');
+    const designBeamInput = document.getElementById('design-beam');
+    const designPropulsionInput = document.getElementById('design-propulsion');
+    const sensorSlotsContainer = document.getElementById('sensor-slots');
+    const addSensorSlotBtn = document.getElementById('add-sensor-slot');
+    const weaponSlotsContainer = document.getElementById('weapon-slots');
+    const addWeaponSlotBtn = document.getElementById('add-weapon-slot');
+    const resetDesignBtn = document.getElementById('reset-design');
+    const saveDesignBtn = document.getElementById('save-design');
+    const designForm = document.getElementById('design-form');
+    const uploadBtn = document.getElementById('upload-btn');
+    // --- STATE ---
+    let designs = [], nextDesignId = 1, shipImageDataUrl = null;
+    // --- HELPERS ---
+    function slotHtml(type, idx) {
+        // type: 'sensor' or 'weapon'
+        const isSensor = type === 'sensor';
+        const predefined = isSensor ? predefinedSensors : predefinedWeapons;
+        const predefinedKeys = Object.keys(predefined);
+        const predefinedOpts = ['<option value="">-- Select a predefined ' + (isSensor ? 'sensor' : 'weapon') + ' --</option>']
+            .concat(predefinedKeys.map(k =>
+                `<option value="${k}">${isSensor
+                    ? `${predefined[k].name} (${predefined[k].type})`
+                    : predefined[k].name}</option>`
+            )).join('');
+        return `
+        <div class="${type}-slot-header">
+            <h4 class="${type}-slot-title">${type.charAt(0).toUpperCase() + type.slice(1)} Slot ${idx + 1}</h4>
+            ${idx === 0 ? "" :
+                `<button type="button" class="remove-${type}-slot" aria-label="Remove ${type} slot">&times;</button>`
+            }
+        </div>
+        <div class="form-group predefined-select">
+            <label class="form-label">Predefined ${isSensor ? 'Sensors' : 'Weapons'}</label>
+            <select class="form-input ${type}-predefined">${predefinedOpts}</select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">${isSensor ? 'Sensor' : 'Weapon'} Name</label>
+            <input type="text" class="form-input ${type}-name" placeholder="Enter ${isSensor ? 'sensor' : 'weapon'} name">
+        </div>
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    ${isSensor ? `
+                        <label class="form-label">Type</label>
+                        <select class="form-input sensor-type">
+                            <option value="Radar">Radar</option>
+                            <option value="Sonar">Sonar</option>
+                            <option value="ESM">ESM</option>
+                            <option value="EO/IR">EO/IR</option>
+                        </select>
+                    ` : `
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-input weapon-quantity" placeholder="Enter quantity">
+                    `}
+                </div>
+            </div>
+            <div class="form-col">
+                <div class="form-group">
+                    ${isSensor ? `
+                        <label class="form-label">Range (km)</label>
+                        <input type="number" class="form-input sensor-range" placeholder="Enter range">
+                    ` : `
+                        <label class="form-label">Caliber/Type</label>
+                        <input type="text" class="form-input weapon-caliber" placeholder="Enter caliber or type">
+                    `}
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-input ${type}-description" rows="2" placeholder="Enter ${isSensor ? 'sensor' : 'weapon'} description"></textarea>
+        </div>
+    `;
+    }
+    function renderSlots(type, count) {
+        const container = type === "sensor" ? sensorSlotsContainer : weaponSlotsContainer;
+        container.innerHTML = '';
+        for (let i = 0; i < count; ++i) {
+            const slot = document.createElement('div');
+            slot.className = `${type}-slot`;
+            slot.setAttribute('data-slot', i);
+            slot.innerHTML = slotHtml(type, i);
+            container.appendChild(slot);
+        }
+    }
+    function getSlotCount(type) {
+        return (type === 'sensor' ? sensorSlotsContainer : weaponSlotsContainer).children.length;
+    }
+    function addSlot(type) {
+        const count = getSlotCount(type);
+        const container = type === "sensor" ? sensorSlotsContainer : weaponSlotsContainer;
+        const slot = document.createElement('div');
+        slot.className = `${type}-slot`;
+        slot.setAttribute('data-slot', count);
+        slot.innerHTML = slotHtml(type, count);
+        container.appendChild(slot);
+    }
+    function updateSlotTitles(type) {
+        const slots = (type === "sensor" ? sensorSlotsContainer : weaponSlotsContainer).querySelectorAll(`.${type}-slot`);
+        slots.forEach((slot, idx) => {
+            slot.setAttribute('data-slot', idx);
+            const title = slot.querySelector(`.${type}-slot-title`);
+            if (title) title.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Slot ${idx + 1}`;
+        });
+    }
+    function resetFormFields() {
+        designNameInput.value = '';
+        shipImagePreview.innerHTML = '<div class="ship-image-placeholder">No image uploaded</div>';
+        shipImageDataUrl = null;
+        designTypeInput.value = 'Aircraft Carrier';
+        designDisplacementInput.value = '';
+        designLengthInput.value = '';
+        designBeamInput.value = '';
+        designPropulsionInput.value = '';
+        renderSlots('sensor', 1);
+        renderSlots('weapon', 1);
+    }
+    // --- INIT ---
+    renderSlots('sensor', 1);
+    renderSlots('weapon', 1);
+    // --- IMAGE UPLOAD ---
+    uploadBtn.addEventListener('click', () => shipImageUpload.click());
+    shipImageUpload.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                shipImageDataUrl = e.target.result;
+                shipImagePreview.innerHTML = `<img src="${shipImageDataUrl}" alt="Ship Image">`;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+    // --- SLOT EVENT HANDLING (DELEGATED) ---
+    function handlePredefinedChange(e, type) {
+        if (e.target.classList.contains(`${type}-predefined`)) {
+            const val = e.target.value;
+            const slot = e.target.closest(`.${type}-slot`);
+            if (!slot) return;
+            if (type === 'sensor') {
+                const s = predefinedSensors[val];
+                slot.querySelector('.sensor-name').value = s ? s.name : '';
+                slot.querySelector('.sensor-type').value = s ? s.type : 'Radar';
+                slot.querySelector('.sensor-range').value = s ? s.range : '';
+                slot.querySelector('.sensor-description').value = s ? s.description : '';
+            } else {
+                const w = predefinedWeapons[val];
+                slot.querySelector('.weapon-name').value = w ? w.name : '';
+                slot.querySelector('.weapon-quantity').value = w ? w.quantity : '';
+                slot.querySelector('.weapon-caliber').value = w ? w.caliber : '';
+                slot.querySelector('.weapon-description').value = w ? w.description : '';
+            }
+        }
+    }
+    function handleRemoveSlot(e, type) {
+        if (e.target.classList.contains(`remove-${type}-slot`)) {
+            const slot = e.target.closest(`.${type}-slot`);
+            if (slot) {
+                slot.remove();
+                updateSlotTitles(type);
+            }
+        }
+    }
+    sensorSlotsContainer.addEventListener('change', e => handlePredefinedChange(e, 'sensor'));
+    weaponSlotsContainer.addEventListener('change', e => handlePredefinedChange(e, 'weapon'));
+    sensorSlotsContainer.addEventListener('click', e => handleRemoveSlot(e, 'sensor'));
+    weaponSlotsContainer.addEventListener('click', e => handleRemoveSlot(e, 'weapon'));
+    // --- ADD SLOT BUTTONS ---
+    addSensorSlotBtn.addEventListener('click', () => addSlot('sensor'));
+    addWeaponSlotBtn.addEventListener('click', () => addSlot('weapon'));
+    // --- RESET ---
+    resetDesignBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+            resetFormFields();
+        }
+    });
+    // --- SAVE DESIGN ---
+    designForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = designNameInput.value.trim();
+        const type = designTypeInput.value;
+        const displacement = designDisplacementInput.value ? parseInt(designDisplacementInput.value) : 0;
+        const length = designLengthInput.value ? parseInt(designLengthInput.value) : 0;
+        const beam = designBeamInput.value ? parseInt(designBeamInput.value) : 0;
+        const propulsion = designPropulsionInput.value.trim();
+        // Collect sensor data
+        const sensors = Array.from(sensorSlotsContainer.querySelectorAll('.sensor-slot')).map(slot => {
+            return {
+                name: slot.querySelector('.sensor-name').value.trim(),
+                type: slot.querySelector('.sensor-type').value,
+                range: slot.querySelector('.sensor-range').value ? parseInt(slot.querySelector('.sensor-range').value) : 0,
+                description: slot.querySelector('.sensor-description').value.trim()
+            }
+        }).filter(s => s.name || s.type || s.range || s.description);
+        // Collect weapon data
+        const weapons = Array.from(weaponSlotsContainer.querySelectorAll('.weapon-slot')).map(slot => {
+            return {
+                name: slot.querySelector('.weapon-name').value.trim(),
+                quantity: slot.querySelector('.weapon-quantity').value ? parseInt(slot.querySelector('.weapon-quantity').value) : 0,
+                caliber: slot.querySelector('.weapon-caliber').value.trim(),
+                description: slot.querySelector('.weapon-description').value.trim()
+            }
+        }).filter(w => w.name || w.quantity || w.caliber || w.description);
+        if (!name) {
+            alert('Please enter a class name');
+            return;
+        }
+        designs.push({
+            id: nextDesignId++,
+            name, type, displacement, length, beam, propulsion,
+            sensors, weapons,
+            image: shipImageDataUrl
+        });
+        alert('Design saved successfully!');
+        resetFormFields();
+    });
+    </script>
+</body>
+</html>
