@@ -7,7 +7,11 @@ const express = require("express");
 const passport = require("passport");
 const querystring = require("querystring");
 
-const { buildAbsoluteUrl } = require("./request-context");
+const {
+  buildAbsoluteUrl,
+  getRequestHost,
+  getRequestProtocol
+} = require("./request-context");
 
 require("dotenv").config();
 
@@ -63,8 +67,87 @@ const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
         return next(err);
       }
 
-      const returnTo =
-        buildAbsoluteUrl(req, "/", applyBasePath) || applyBasePath("/") || "/";
+      const safeParseUrl = (value) => {
+        if (!value || typeof value !== "string") {
+          return null;
+        }
+
+        try {
+          return new URL(value);
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const ensureAbsoluteUrl = (rawValue) => {
+        if (!rawValue || typeof rawValue !== "string") {
+          return null;
+        }
+
+        const trimmed = rawValue.trim();
+        if (!trimmed) {
+          return null;
+        }
+
+        const direct = safeParseUrl(trimmed);
+        if (direct) {
+          return direct.toString();
+        }
+
+        const host = getRequestHost(req);
+        if (!host) {
+          return null;
+        }
+
+        const protocol = getRequestProtocol(req) || "http";
+
+        try {
+          const relativePath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+          return new URL(relativePath, `${protocol}://${host}`).toString();
+        } catch (parseError) {
+          return null;
+        }
+      };
+
+      const fallbackReturnTo =
+        ensureAbsoluteUrl(buildAbsoluteUrl(req, "/", applyBasePath)) ||
+        ensureAbsoluteUrl(applyBasePath("/")) ||
+        ensureAbsoluteUrl("/") ||
+        "/";
+
+      const fallbackUrl = safeParseUrl(fallbackReturnTo);
+
+      const requestedReturnTo = (() => {
+        if (!fallbackUrl) {
+          return null;
+        }
+
+        const { returnTo } = req.query;
+        if (!returnTo || typeof returnTo !== "string") {
+          return null;
+        }
+
+        const trimmed = returnTo.trim();
+        if (!trimmed) {
+          return null;
+        }
+
+        const absoluteCandidate = ensureAbsoluteUrl(trimmed);
+        if (!absoluteCandidate) {
+          return null;
+        }
+
+        const candidateUrl = safeParseUrl(absoluteCandidate);
+        if (!candidateUrl) {
+          return null;
+        }
+
+        if (candidateUrl.origin !== fallbackUrl.origin) {
+          return null;
+        }
+
+        return candidateUrl.toString();
+      })() || fallbackReturnTo;
 
       const logoutURL = new URL(
         `https://${process.env.AUTH0_DOMAIN}/v2/logout`
@@ -72,7 +155,7 @@ const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
 
       const searchString = querystring.stringify({
         client_id: process.env.AUTH0_CLIENT_ID,
-        returnTo
+        returnTo: requestedReturnTo
       });
       logoutURL.search = searchString;
 
