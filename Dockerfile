@@ -3,7 +3,8 @@ FROM python:3.11-slim
 
 ENV PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    APP_HOME=/opt/nrp-site
 
 # Install Node.js and system dependencies
 RUN apt-get update \
@@ -16,24 +17,24 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove curl gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR ${APP_HOME}
 
 # Install Python dependencies
 COPY src/server/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Node dependencies for the Express app
-WORKDIR /app/src/server/nrp-site
+WORKDIR ${APP_HOME}/src/server/nrp-site
 COPY src/server/nrp-site/package*.json ./
 RUN npm install
 
 # Copy the rest of the application source
-WORKDIR /app
+WORKDIR ${APP_HOME}
 COPY src ./src
 
-WORKDIR /app/src/server
+WORKDIR ${APP_HOME}/src/server
 
 # Expose the ports used by the Express server and BrowserSync proxy
-EXPOSE 3000 3001
+EXPOSE 3000 3001 8000
 
-CMD ["python", "server_launcher.py"]
+CMD ["python", "/opt/nrp-site/src/server/server_launcher.py"]
