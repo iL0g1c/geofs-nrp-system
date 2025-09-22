@@ -31,6 +31,27 @@ body {
 .tab:hover { background: var(--btn-secondary);}
 .tab.active { background: rgba(88,166,255,0.15); color: var(--accent-blue);}
 .user-menu { display: flex; align-items: center; gap: 12px; flex-shrink: 0;}
+.ship-tracker-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(88,166,255,0.35);
+    background: rgba(88,166,255,0.12);
+    color: var(--accent-blue);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.ship-tracker-btn:hover {
+    background: rgba(88,166,255,0.24);
+    color: var(--text-primary);
+}
+.ship-tracker-btn .material-symbols-outlined {
+    font-size: 18px;
+}
 .sign-out-btn {
     padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
     background: rgba(218,54,51,0.1); border-color: rgba(238,45,41,0.1) ;
