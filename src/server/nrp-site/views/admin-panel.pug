@@ -53,7 +53,7 @@ block layout-content
         a.ship-tracker-btn(href=applyBasePath('/ship-tracker'), target='_blank', rel='noopener')
           span.material-symbols-outlined map
           |  Ship Tracker
-        button.sign-out-btn(type='button')
+        button.sign-out-btn(type='button', data-logout-return-to=logoutReturnTo)
           span
           |  Sign Out
   main.main-content

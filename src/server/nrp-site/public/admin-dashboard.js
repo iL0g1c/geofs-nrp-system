@@ -14,6 +14,26 @@ const applyBasePath = (pathname = '/') => {
 
     return `${basePath}${normalized}`.replace(/\/{2,}/g, '/');
 };
+const attachSignOutHandler = () => {
+    const button = $('.sign-out-btn');
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        const params = new URLSearchParams();
+        const returnTo = (button.dataset.logoutReturnTo || '').trim();
+        if (returnTo) {
+            params.set('returnTo', returnTo);
+        }
+
+        const logoutPath = applyBasePath('/logout');
+        const query = params.toString();
+        const targetUrl = query ? `${logoutPath}?${query}` : logoutPath;
+        window.location.assign(targetUrl);
+    });
+};
+attachSignOutHandler();
 class Modal {
     constructor(el, closeBtns = []) {
         this.el = el;
