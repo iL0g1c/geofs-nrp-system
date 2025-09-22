@@ -688,11 +688,26 @@ class DataStore {
             return false;
         }
     }
+    /*
+    fileReader = new FileReader();
+    fileInput = $('#data-upload');
+    async readCSV (e) {
+        this.fileReader.onload(() => console.log(this.fileReader.result));
+        this.fileInput.setAttribute('disabled', !0);
+        const t = e.target.files[0];
+        this.fileReader.readAsText(t);
+    }
+    @todo - test this + actually integrate
+    */
 }
 const store = new DataStore();
 const editForceModal = new Modal($('#edit-force-modal'), [$('#close-force-modal'), $('#cancel-force-details')]);
 const baseModal = new Modal($('#base-modal'), [$('#close-base-modal'), $('#cancel-base')]);
 const shipModal = new Modal($('#ship-modal'), [$('#close-ship-modal'), $('#cancel-ship')]);
+/*
+<input id="data-upload" type="file" accept=".csv"/>
+$("data-upload").addEventListener("change", readCSV.bind(store));
+*/
 $('#force-logo').onclick = () => $('#logo-upload').click();
 $('#logo-upload').onchange = function() {
     if (this.files[0]) {
