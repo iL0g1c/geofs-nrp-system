@@ -510,6 +510,7 @@
             </div>
         </div>
     </div>
+<input id="data-upload" type="file" accept=".csv"/>
     <script>
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 class Modal {
@@ -688,26 +689,50 @@ class DataStore {
             return false;
         }
     }
-    /*
+    // @todo - actually integrate & make the input html & css nice looking
+    parseCSV(t) {
+        const n = [];
+        let r = 0, e = !1, l = "", o = [];
+        const s = () => {
+            o.push(l), l = ""
+        }, h = () => {
+            n.push(o), o = []
+        }, c = t.length;
+        for (;r <= c;) {
+            const n = t[r] || "\n";
+            e ? '"' === n ? '"' === t[r + 1] ? (l += '"', r++) : e = !1 : l += n : '"' === n ? e= !0 : "," === n ? s() : "\n" === n || "\r" === n ? ("\r" === n && "\n" === t[r + 1] && r++, s(), h()) : r === c ? (s(), h()) : l += n, r++
+        }
+        if (n.length < 1) return [];
+        const a = n[0].map((t => t.trim()))
+        , f = new Array(n.length - 1);
+        for (let t = 1; t < n.length; t++) {
+            const r = n[t], e = {};
+            for (let t = 0; t < a.length; t++) {
+                let n = r[t] || "";
+                e[a[t]] = n.trim()
+            }
+            f[t-1] = e
+        }
+        return f
+    }
+    import(e) {
+        console.log(this.parseCSV(e));
+    }
+    export(e) {}
     fileReader = new FileReader();
     fileInput = $('#data-upload');
     async readCSV (e) {
-        this.fileReader.onload(() => console.log(this.fileReader.result));
+        this.fileReader.onload = () => this.import(this.fileReader.result);
         this.fileInput.setAttribute('disabled', !0);
         const t = e.target.files[0];
         this.fileReader.readAsText(t);
-    }
-    @todo - test this + actually integrate
-    */
+    } // tested
 }
 const store = new DataStore();
 const editForceModal = new Modal($('#edit-force-modal'), [$('#close-force-modal'), $('#cancel-force-details')]);
 const baseModal = new Modal($('#base-modal'), [$('#close-base-modal'), $('#cancel-base')]);
 const shipModal = new Modal($('#ship-modal'), [$('#close-ship-modal'), $('#cancel-ship')]);
-/*
-<input id="data-upload" type="file" accept=".csv"/>
-$("data-upload").addEventListener("change", readCSV.bind(store));
-*/
+$("#data-upload").addEventListener("change", store.readCSV.bind(store));
 $('#force-logo').onclick = () => $('#logo-upload').click();
 $('#logo-upload').onchange = function() {
     if (this.files[0]) {
