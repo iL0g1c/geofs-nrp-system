@@ -1,0 +1,38 @@
+extends layout
+
+block layout-content
+  main.credits-page
+    section.credits-card
+      nav.credits-nav
+        a.credits-back(href=applyBasePath('/'))
+          span.credits-back-icon &larr;
+          span Back to login
+      header.credits-header
+        h1.credits-title Project Credits
+          p.credits-intro Meet the volunteers keeping the GeoFS Naval Response Program running.
+        section.credits-section 
+          h2.credits-section-title Developers
+          p.credits-section-description Members of the MRP community who commited time to this project free of charge due to their love for the community.
+          ui.credits-list 
+            li.credits-list-item 
+              span.credits-name Osprey_ 
+              span.credits-role Lead Developer 
+              p.credits-contribution Server host, database design, backend logic
+            li.credits-list-item 
+              span.credits-name Bismarck 
+              span.credits-role Developer
+              p.credits-contribution Website UI 
+            li.credits-list-item 
+              span.credits-name meatbroc 
+              span.credits-role Developer 
+              p.credits-contribution GeoFS addon, general website optimizations
+        section.credits-section 
+          h2.credits-section-title
+          p.credits-section-description Other members that participated in this project.
+          ui.credits-list 
+            li.credits-list-item 
+              span.credits-name Kelvin 
+              span.credits-role Project Manager 
+              p.credits-contribution concept design, public relations
+      footer.credits-footer
+        p Thank you to the GeoFS Military Roleplay Communuity for your support.

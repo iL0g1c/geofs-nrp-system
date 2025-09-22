@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "USS Gerald R. Ford",
+    "class": "Aircraft Carrier",
+    "hull": "CVN-78",
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "name": "USS Zumwalt",
+    "class": "Destroyer",
+    "hull": "DDG-1000",
+    "status": "active"
+  },
+  {
+    "id": 3,
+    "name": "USS Virginia",
+    "class": "Submarine",
+    "hull": "SSN-774",
+    "status": "active"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Norfolk Naval Station",
+    "location": "Virginia, USA",
+    "capacity": "12,000 personnel",
+    "status": "operational"
+  },
+  {
+    "id": 2,
+    "name": "Pearl Harbor",
+    "location": "Hawaii, USA",
+    "capacity": "15,000 personnel",
+    "status": "operational"
+  },
+  {
+    "id": 3,
+    "name": "Guantanamo Bay",
+    "location": "Cuba",
+    "capacity": "8,000 personnel",
+    "status": "limited"
+  }
+]

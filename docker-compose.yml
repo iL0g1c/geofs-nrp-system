@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  nrp-site:
+    image: nrp-site:latest
+    container_name: nrp-site
+    restart: unless-stopped
+    ports:
+      - "8000:8000"   # host:container
+    volumes:
+      - /DATA/AppData/nrp-site:/app
+    networks:
+      - casaos
+
+networks:
+  casaos:
+    external: true
