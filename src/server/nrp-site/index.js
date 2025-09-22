@@ -159,7 +159,9 @@ app.use((req, res, next) => {
   next();
 });
 
-const authRouter = createAuthRouter({ applyBasePath });
+const { router: authRouter, getLogoutReturnTo } = createAuthRouter({
+  applyBasePath
+});
 
 app.use(basePath || "/", authRouter);
 
@@ -180,7 +182,8 @@ router.get("/admin-panel", secured, (req, res, next) => {
   const { _raw, _json, ...userProfile } = req.user;
   res.render("admin-panel", {
     title: "Admin Panel",
-    userProfile: userProfile
+    userProfile: userProfile,
+    logoutReturnTo: getLogoutReturnTo(req)
   });
 });
 

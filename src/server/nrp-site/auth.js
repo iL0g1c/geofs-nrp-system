@@ -18,8 +18,154 @@ require("dotenv").config();
 const defaultApplyBasePath = (pathname = "/") =>
   pathname.startsWith("/") ? pathname : `/${pathname}`;
 
+const safeParseUrl = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return value instanceof URL ? value : new URL(value);
+  } catch (error) {
+    return null;
+  }
+};
+
+const coerceConfigUrl = (value, baseOrigin) => {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const direct = safeParseUrl(trimmed);
+  if (direct) {
+    return direct;
+  }
+
+  if (!baseOrigin) {
+    return null;
+  }
+
+  try {
+    const relativePath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    return new URL(relativePath, baseOrigin);
+  } catch (error) {
+    return null;
+  }
+};
+
+const resolveAbsoluteUrlFromRequest = (
+  req,
+  rawValue,
+  { fallbackOrigin } = {}
+) => {
+  if (!rawValue || typeof rawValue !== "string") {
+    return null;
+  }
+
+  const trimmed = rawValue.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const direct = safeParseUrl(trimmed);
+  if (direct) {
+    return direct.toString();
+  }
+
+  const origin = (() => {
+    if (fallbackOrigin) {
+      return fallbackOrigin;
+    }
+
+    const host = getRequestHost(req);
+    if (!host) {
+      return null;
+    }
+
+    const protocol = getRequestProtocol(req) || "http";
+    return `${protocol}://${host}`;
+  })();
+
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    const relativePath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    return new URL(relativePath, origin).toString();
+  } catch (error) {
+    return null;
+  }
+};
+
 const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
   const router = express.Router();
+
+  const callbackUrl = safeParseUrl(process.env.AUTH0_CALLBACK_URL);
+  const callbackOrigin = callbackUrl && callbackUrl.origin;
+  const configuredLogoutUrl =
+    coerceConfigUrl(process.env.AUTH0_LOGOUT_RETURN_TO, callbackOrigin) ||
+    callbackUrl;
+
+  const getRequestOriginUrl = (req) => {
+    const absolute = buildAbsoluteUrl(req, "/", applyBasePath);
+    const parsed = safeParseUrl(absolute);
+    if (parsed) {
+      return parsed;
+    }
+
+    const derived = resolveAbsoluteUrlFromRequest(req, applyBasePath("/"), {
+      fallbackOrigin:
+        (configuredLogoutUrl && configuredLogoutUrl.origin) || callbackOrigin
+    });
+
+    return safeParseUrl(derived);
+  };
+
+  const computeLogoutReturnTo = (req, rawReturnTo) => {
+    const requestOriginUrl = getRequestOriginUrl(req);
+    const fallbackUrl = configuredLogoutUrl || requestOriginUrl;
+    const fallbackOrigin = fallbackUrl && fallbackUrl.origin;
+
+    const allowedOrigins = new Set();
+    if (configuredLogoutUrl) {
+      allowedOrigins.add(configuredLogoutUrl.origin);
+    }
+    if (requestOriginUrl) {
+      allowedOrigins.add(requestOriginUrl.origin);
+    }
+
+    const requestedUrl = (() => {
+      if (!rawReturnTo || typeof rawReturnTo !== "string") {
+        return null;
+      }
+
+      const absoluteCandidate = resolveAbsoluteUrlFromRequest(req, rawReturnTo, {
+        fallbackOrigin
+      });
+      if (!absoluteCandidate) {
+        return null;
+      }
+
+      const candidateUrl = safeParseUrl(absoluteCandidate);
+      if (!candidateUrl) {
+        return null;
+      }
+
+      if (allowedOrigins.size && !allowedOrigins.has(candidateUrl.origin)) {
+        return null;
+      }
+
+      return candidateUrl;
+    })();
+
+    const resultUrl = requestedUrl || fallbackUrl;
+    return resultUrl ? resultUrl.toString() : null;
+  };
 
   router.get(
     "/login",
@@ -43,6 +189,15 @@ const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
   );
 
   router.get("/callback", (req, res, next) => {
+    const hasCode =
+      req.query && typeof req.query.code === "string" && req.query.code.trim();
+    const hasError =
+      req.query && typeof req.query.error === "string" && req.query.error.trim();
+
+    if (!hasCode && !hasError) {
+      return res.redirect(applyBasePath("/login"));
+    }
+
     passport.authenticate("auth0", (err, user, info) => {
       if (err) {
         return next(err);
@@ -67,103 +222,29 @@ const createAuthRouter = ({ applyBasePath = defaultApplyBasePath } = {}) => {
         return next(err);
       }
 
-      const safeParseUrl = (value) => {
-        if (!value || typeof value !== "string") {
-          return null;
-        }
-
-        try {
-          return new URL(value);
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const ensureAbsoluteUrl = (rawValue) => {
-        if (!rawValue || typeof rawValue !== "string") {
-          return null;
-        }
-
-        const trimmed = rawValue.trim();
-        if (!trimmed) {
-          return null;
-        }
-
-        const direct = safeParseUrl(trimmed);
-        if (direct) {
-          return direct.toString();
-        }
-
-        const host = getRequestHost(req);
-        if (!host) {
-          return null;
-        }
-
-        const protocol = getRequestProtocol(req) || "http";
-
-        try {
-          const relativePath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-          return new URL(relativePath, `${protocol}://${host}`).toString();
-        } catch (parseError) {
-          return null;
-        }
-      };
-
-      const fallbackReturnTo =
-        ensureAbsoluteUrl(buildAbsoluteUrl(req, "/", applyBasePath)) ||
-        ensureAbsoluteUrl(applyBasePath("/")) ||
-        ensureAbsoluteUrl("/") ||
-        "/";
-
-      const fallbackUrl = safeParseUrl(fallbackReturnTo);
-
-      const requestedReturnTo = (() => {
-        if (!fallbackUrl) {
-          return null;
-        }
-
-        const { returnTo } = req.query;
-        if (!returnTo || typeof returnTo !== "string") {
-          return null;
-        }
-
-        const trimmed = returnTo.trim();
-        if (!trimmed) {
-          return null;
-        }
-
-        const absoluteCandidate = ensureAbsoluteUrl(trimmed);
-        if (!absoluteCandidate) {
-          return null;
-        }
-
-        const candidateUrl = safeParseUrl(absoluteCandidate);
-        if (!candidateUrl) {
-          return null;
-        }
-
-        if (candidateUrl.origin !== fallbackUrl.origin) {
-          return null;
-        }
-
-        return candidateUrl.toString();
-      })() || fallbackReturnTo;
+      const requestedReturnTo = computeLogoutReturnTo(req, req.query.returnTo);
 
       const logoutURL = new URL(
         `https://${process.env.AUTH0_DOMAIN}/v2/logout`
       );
 
-      const searchString = querystring.stringify({
-        client_id: process.env.AUTH0_CLIENT_ID,
-        returnTo: requestedReturnTo
-      });
-      logoutURL.search = searchString;
+      const params = {
+        client_id: process.env.AUTH0_CLIENT_ID
+      };
 
-      res.redirect(logoutURL);
+      if (requestedReturnTo) {
+        params.returnTo = requestedReturnTo;
+      }
+
+      logoutURL.search = querystring.stringify(params);
+
+      res.redirect(logoutURL.toString());
     });
   });
 
-  return router;
+  const getLogoutReturnTo = (req) => computeLogoutReturnTo(req) || undefined;
+
+  return { router, getLogoutReturnTo };
 };
 
 module.exports = createAuthRouter;
