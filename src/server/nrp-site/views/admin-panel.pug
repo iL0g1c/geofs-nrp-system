@@ -50,6 +50,9 @@ block layout-content
         .tab(data-tab='bases') Bases
         .tab(data-tab='fleets') Fleets
       .user-menu
+        a.ship-tracker-btn(href=applyBasePath('/ship-tracker'), target='_blank', rel='noopener')
+          span.material-symbols-outlined map
+          |  Ship Tracker
         button.sign-out-btn(type='button')
           span
           |  Sign Out
@@ -58,7 +61,7 @@ block layout-content
       .section-header
         h2.section-title Ships
         .section-buttons
-          a.design-ship-btn(href=applyBasePath('/shipDesigner.html'), target='_blank')
+          a.design-ship-btn(href=applyBasePath('/ship-designer'), target='_blank')
             span
             |  Design Ships
           button#add-ship-btn.add-ship-btn(type='button')

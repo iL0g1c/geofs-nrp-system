@@ -271,6 +271,12 @@ router.get("/ship-tracker", secured, (req, res) => {
   });
 });
 
+router.get("/ship-designer", secured, (req, res) => {
+  res.render("ship-designer", {
+    title: "Ship Designer"
+  });
+});
+
 app.use(basePath || "/", router);
 
 /**
