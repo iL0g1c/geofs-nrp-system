@@ -1,0 +1,84 @@
+extends layout
+
+block variables
+  - var includeBaseStyles = false
+  - var useRootContainer = false
+  - var bodyClass = 'ship-designer-page'
+
+block extra_styles
+  link(rel='stylesheet', href=applyBasePath('/admin-dashboard.css'))
+
+block layout-content
+  header.topbar
+    .topbar-content
+      .logo
+        span ⚓
+        |  GNA Admin
+      nav.nav-links(aria-label='Main')
+        a.nav-link(href=applyBasePath('/admin-panel')) Dashboard
+        a.nav-link.active(href=applyBasePath('/ship-designer')) Designs
+        a.nav-link(href='#') Specifications
+        a.nav-link(href='#') Projects
+      .user-menu
+        button.sign-out-btn(type='button')
+          span 🚪
+          |  Sign Out
+  main.main-content
+    form#design-form.primary-design-form(autocomplete='off')
+      section.form-section
+        h2.form-section-title ⚓ Create New Ship Design
+        .form-group
+          label.form-label(for='design-name') Ship Class Name
+          input#design-name.form-input(type='text', placeholder='Enter class name', required)
+        .image-upload-container
+          #ship-image-preview.ship-image-preview
+            .ship-image-placeholder No image uploaded
+          .file-input-wrapper
+            button#upload-btn.btn.btn-secondary(type='button') Upload Ship Image
+            input#ship-image-upload(type='file', accept='image/*')
+        .form-row
+          .form-col
+            .form-group
+              label.form-label(for='design-type') Type
+              select#design-type.form-input
+                option(value='Aircraft Carrier') Aircraft Carrier
+                option(value='Destroyer') Destroyer
+                option(value='Cruiser') Cruiser
+                option(value='Submarine') Submarine
+                option(value='Amphibious') Amphibious
+                option(value='Frigate') Frigate
+                option(value='Patrol') Patrol
+          .form-col
+            .form-group
+              label.form-label(for='design-displacement') Displacement (tons)
+              input#design-displacement.form-input(type='number', placeholder='Enter displacement')
+        .form-row
+          .form-col
+            .form-group
+              label.form-label(for='design-length') Length (m)
+              input#design-length.form-input(type='number', placeholder='Enter length')
+          .form-col
+            .form-group
+              label.form-label(for='design-beam') Beam (m)
+              input#design-beam.form-input(type='number', placeholder='Enter beam')
+        .form-group
+          label.form-label(for='design-propulsion') Propulsion
+          input#design-propulsion.form-input(type='text', placeholder='Enter propulsion details')
+      section.form-section
+        h3.form-section-title 📡 Sensors
+        #sensor-slots.sensor-slots
+        button#add-sensor-slot.add-sensor-slot.btn.btn-primary(type='button')
+          span +
+          |  Add Sensor
+      section.form-section
+        h3.form-section-title 🔫 Armament
+        #weapon-slots.weapon-slots
+        button#add-weapon-slot.add-weapon-slot.btn.btn-primary(type='button')
+          span +
+          |  Add Weapon
+      .form-actions
+        button#reset-design.btn(type='button') Reset
+        button#save-design.btn.btn-primary(type='submit') Save Design
+
+block scripts
+  script(src=applyBasePath('/ship-designer.js'))

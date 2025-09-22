@@ -1,107 +1,133 @@
-const $ = sel => document.querySelector(sel), $$ = sel => document.querySelectorAll(sel);
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+const applyBasePath = (pathname = '/') => {
+    const safePath = typeof pathname === 'string' ? pathname : '/';
+    const normalized = safePath.startsWith('/') ? safePath : `/${safePath}`;
+    const basePath = window.__BASE_PATH__ || '';
 
-// Modal class
+    if (!basePath) {
+        return normalized === '//' ? '/' : normalized;
+    }
+
+    if (normalized === '/') {
+        return basePath;
+    }
+
+    return `${basePath}${normalized}`.replace(/\/{2,}/g, '/');
+};
+const attachSignOutHandler = () => {
+    const button = $('.sign-out-btn');
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        const params = new URLSearchParams();
+        const returnTo = (button.dataset.logoutReturnTo || '').trim();
+        if (returnTo) {
+            params.set('returnTo', returnTo);
+        }
+
+        const logoutPath = applyBasePath('/logout');
+        const query = params.toString();
+        const targetUrl = query ? `${logoutPath}?${query}` : logoutPath;
+        window.location.assign(targetUrl);
+    });
+};
+attachSignOutHandler();
 class Modal {
-    constructor(element, closeBtns = []) {
-        this.element = element;
-        this.closeBtns = closeBtns;
-        this.isBound = false;
+    constructor(el, closeBtns = []) {
+        this.el = el;
+        closeBtns.forEach(b => b.onclick = () => this.close());
+        el.onclick = e => e.target === el && this.close();
+        document.addEventListener('keydown', e => e.key === 'Escape' && this.isOpen() && this.close());
     }
-
-    open() {
-        this.element.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    close() {
-        this.element.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-
-    bind() {
-        if (this.isBound) return;
-        this.closeBtns.forEach(btn => btn.onclick = () => this.close());
-        this.element.onclick = e => e.target === this.element && this.close();
-        document.addEventListener('keydown', this._escHandler = (e) => {
-            if (e.key === 'Escape' && this.element.classList.contains('show')) this.close();
-        });
-        this.isBound = true;
-    }
-
-    unbind() {
-        this.closeBtns.forEach(btn => btn.onclick = null);
-        this.element.onclick = null;
-        document.removeEventListener('keydown', this._escHandler);
-        this.isBound = false;
-    }
+    open() { this.el.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    close() { this.el.classList.remove('show'); document.body.style.overflow = ''; }
+    isOpen() { return this.el.classList.contains('show'); }
 }
-
-// StatusStrategy class
-class StatusStrategy {
-    static base = {
+const StatusStrategy = {
+    base: {
         operational: { cls: 'status-green', txt: 'Operational' },
         limited: { cls: 'status-yellow', txt: 'Limited Operations' },
         'under-construction': { cls: 'status-blue', txt: 'Under Construction' },
         decommissioned: { cls: 'status-red', txt: 'Decommissioned' }
-    };
-
-    static ship = {
+    },
+    ship: {
         active: { cls: 'status-green', txt: 'Active' },
         reserve: { cls: 'status-yellow', txt: 'Reserve' },
         'under-construction': { cls: 'status-blue', txt: 'Under Construction' },
         decommissioned: { cls: 'status-red', txt: 'Decommissioned' }
-    };
-
-    static get(type, status) {
-        return this[type][status] || (type === 'ship'
-            ? { cls: 'status-green', txt: 'Active' }
-            : { cls: 'status-green', txt: 'Operational' });
+    },
+    get(type, status) {
+        return this[type][status] || this[type][Object.keys(this[type])[0]];
     }
-}
-
-// TemplateFactory class
-class TemplateFactory {
-    static base(b) {
-        const status = StatusStrategy.get('base', b.status);
+};
+const TemplateFactory = {
+    base: b => {
+        const s = StatusStrategy.get('base', b.status);
         return `
 <div class="base-card" data-id="${b.id}">
     <div class="base-card-header">
-        <h3>${b.name}</h3>
+        <h3 class="base-name">${b.name}</h3>
         <div class="base-actions">
-            <button class="btn btn-edit">✏️</button>
-            <button class="btn btn-danger">🗑️</button>
+            <button class="btn btn-edit">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn btn-danger">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
         </div>
     </div>
     <div class="base-details">
-        <div><strong>Location:</strong> ${b.location}</div>
-        <div><strong>Capacity:</strong> ${b.capacity}</div>
-        <div><strong>Status:</strong> <span class="status"><span class="status-dot ${status.cls}"></span> ${status.txt}</span></div>
+        <div class="base-detail">
+            <span class="base-detail-label">Location:</span>
+            <span class="base-detail-value">${b.location}</span>
+        </div>
+        <div class="base-detail">
+            <span class="base-detail-label">Capacity:</span>
+            <span class="base-detail-value">${b.capacity}</span>
+        </div>
+        <div class="base-detail">
+            <span class="base-detail-label">Status:</span>
+            <span class="base-detail-value status"><span class="status-dot ${s.cls}"></span> ${s.txt}</span>
+        </div>
     </div>
 </div>`;
-    }
-    static ship(s) {
-        const status = StatusStrategy.get('ship', s.status);
+    },
+    ship: s => {
+        const st = StatusStrategy.get('ship', s.status);
         return `
 <div class="ship-card" data-id="${s.id}">
     <div class="ship-card-header">
-        <h3>${s.name}</h3>
+        <h3 class="ship-name">${s.name}</h3>
         <div class="ship-actions">
-            <button class="btn btn-edit">✏️</button>
-            <button class="btn btn-danger">🗑️</button>
+            <button class="btn btn-edit">
+                <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn btn-danger">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
         </div>
     </div>
     <div class="ship-details">
-        <div><strong>Class:</strong> <span class="ship-class-badge">${s.class}</span></div>
-        <div><strong>Hull:</strong> ${s.hull}</div>
-        <div><strong>Status:</strong> <span class="status"><span class="status-dot ${status.cls}"></span> ${status.txt}</span></div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Class:</span>
+            <span class="ship-detail-value"><span class="ship-class-badge">${s.class}</span></span>
+        </div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Hull Number:</span>
+            <span class="ship-detail-value">${s.hull}</span>
+        </div>
+        <div class="ship-detail">
+            <span class="ship-detail-label">Status:</span>
+            <span class="ship-detail-value status"><span class="status-dot ${st.cls}"></span> ${st.txt}</span>
+        </div>
     </div>
 </div>`;
     }
-}
-
-// ListRenderer class
-class ListRenderer {
-    static render(type, list, container) {
+};
+const ListRenderer = {
+    render(type, list, container) {
         container.innerHTML = list.length
             ? list.map(TemplateFactory[type]).join('')
             : `<div class="empty-state">
@@ -110,49 +136,85 @@ class ListRenderer {
                 <p>Click "Add ${type[0].toUpperCase() + type.slice(1)}" to add your first ${type}</p>
             </div>`;
     }
-}
-
-// DataStore class
+};
 class DataStore {
     constructor() {
-        this._bases = [
-            { id: 1, name: "Norfolk Naval Station", location: "Virginia, USA", capacity: "12,000 personnel", status: "operational" },
-            { id: 2, name: "Pearl Harbor", location: "Hawaii, USA", capacity: "15,000 personnel", status: "operational" },
-            { id: 3, name: "Guantanamo Bay", location: "Cuba", capacity: "8,000 personnel", status: "limited" }
-        ];
-        this._ships = [
-            { id: 1, name: "USS Gerald R. Ford", class: "Aircraft Carrier", hull: "CVN-78", status: "active" },
-            { id: 2, name: "USS Zumwalt", class: "Destroyer", hull: "DDG-1000", status: "active" },
-            { id: 3, name: "USS Virginia", class: "Submarine", hull: "SSN-774", status: "active" }
-        ];
-        this._nextBaseId = 4;
-        this._nextShipId = 4;
+        this._bases = [];
+        this._ships = [];
+        this._nextBaseId = 1;
+        this._nextShipId = 1;
     }
-
+    
     bases() { return this._bases; }
     ships() { return this._ships; }
-
-    addBase(b) { this._bases.push({ ...b, id: this._nextBaseId++ }); }
-    updateBase(b) { this._bases[this._bases.findIndex(x => x.id === b.id)] = b; }
-    removeBase(id) { this._bases = this._bases.filter(b => b.id !== id); }
-
-    addShip(s) { this._ships.push({ ...s, id: this._nextShipId++ }); }
-    updateShip(s) { this._ships[this._ships.findIndex(x => x.id === s.id)] = s; }
-    removeShip(id) { this._ships = this._ships.filter(s => s.id !== id); }
+    
+    _update(list, obj) {
+        const index = list.findIndex(x => x.id === obj.id);
+        if (index !== -1) {
+            list[index] = obj;
+        }
+    }
+    
+    _remove(list, id) {
+        return list.filter(x => x.id !== id);
+    }
+    
+    addBase(b) {
+        const newBase = { ...b, id: this._nextBaseId++ };
+        this._bases.push(newBase);
+        return newBase;
+    }
+    
+    updateBase(b) {
+        this._update(this._bases, b);
+    }
+    
+    removeBase(id) {
+        this._bases = this._remove(this._bases, id);
+    }
+    
+    addShip(s) {
+        const newShip = { ...s, id: this._nextShipId++ };
+        this._ships.push(newShip);
+        return newShip;
+    }
+    
+    updateShip(s) {
+        this._update(this._ships, s);
+    }
+    
+    removeShip(id) {
+        this._ships = this._remove(this._ships, id);
+    }
+    
+    async loadData() {
+        try {
+            const [basesResponse, shipsResponse] = await Promise.all([
+                fetch(applyBasePath('/bases.json')),
+                fetch(applyBasePath('/ships.json'))
+            ]);
+            
+            if (basesResponse.ok) {
+                this._bases = await basesResponse.json();
+                this._nextBaseId = Math.max(0, ...this._bases.map(b => b.id)) + 1;
+            }
+            
+            if (shipsResponse.ok) {
+                this._ships = await shipsResponse.json();
+                this._nextShipId = Math.max(0, ...this._ships.map(s => s.id)) + 1;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error loading data:', error);
+            return false;
+        }
+    }
 }
-
-// ---- App Initialization and Event Wiring ---- //
 const store = new DataStore();
-
-// Modal object instances
 const editForceModal = new Modal($('#edit-force-modal'), [$('#close-force-modal'), $('#cancel-force-details')]);
 const baseModal = new Modal($('#base-modal'), [$('#close-base-modal'), $('#cancel-base')]);
 const shipModal = new Modal($('#ship-modal'), [$('#close-ship-modal'), $('#cancel-ship')]);
-editForceModal.bind();
-baseModal.bind();
-shipModal.bind();
-
-// Force Logo Upload
 $('#force-logo').onclick = () => $('#logo-upload').click();
 $('#logo-upload').onchange = function() {
     if (this.files[0]) {
@@ -161,98 +223,165 @@ $('#logo-upload').onchange = function() {
         r.readAsDataURL(this.files[0]);
     }
 };
-
-// Edit Force Details
 $('#edit-details-btn').onclick = () => {
-    $('#edit-force-name').value = $('.force-name').textContent.replace('🇺🇸 ', '');
-    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e => $(`#edit-${e.split("-")[0]}`).value = $(`#${e}`).textContent);
-    $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g, '');
+    $('#edit-force-name').value = $('.force-name').textContent.replace(/^🇺🇸\s*/, '');
+    ['ships','aircraft','fleets','personnel','commander','established','headquarters'].forEach(f => 
+        $(`#edit-${f}`).value = $(`#${f}-count, #${f}-value`.split(', ').map(sel => $(sel)).find(el=>el)?.textContent)
+    );
+    $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g,'');
     editForceModal.open();
 };
 $('#save-force-details').onclick = () => {
     $('.force-name').innerHTML = `🇺🇸 ${$('#edit-force-name').value}`;
-    ['ships-count', 'aircraft-count', 'fleets-count', 'personnel-count', 'commander-value', 'established-value', 'headquarters-value'].forEach(e => $(`#${e}`).textContent = $(`#edit-${e.split("-")[0]}`).value);
+    ['ships','aircraft','fleets','personnel','commander','established','headquarters'].forEach(f => {
+        const v = $(`#edit-${f}`).value;
+        $(`#${f}-count, #${f}-value`.split(', ').map(sel => $(sel)).find(el=>el)).textContent = v;
+    });
     $('#motto-value').textContent = `"${$('#edit-motto').value}"`;
     editForceModal.close();
 };
-
-// Tabs
-$$('.tab').forEach(tab =>
-    tab.onclick = () => {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        ['bases','ships','fleets'].forEach(id => $(`#${id}-content`).classList.add('hidden'));
-        $(`#${tab.dataset.tab}-content`).classList.remove('hidden');
+$$('.tab').forEach(tab => tab.onclick = () => {
+    $$('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    // Scroll to the selected section
+    const sectionId = tab.dataset.tab;
+    const section = $(`#${sectionId}-section`);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
     }
-);
-
-// Inline stats
-$$('.stat-card').forEach(card =>
-    card.onclick = () => {
-        const val = card.querySelector('.stat-value');
-        if (prompt(`Enter new value for ${card.dataset.stat}:`, val.textContent) !== null) val.textContent = nv;
-    }
-);
-
-// Bases (CRUD)
-const renderBases = () => ListRenderer.render('base', store.bases(), $('#base-list'));
-renderBases();
-$('#base-list').onclick = e => {
-    const card = e.target.closest('.base-card');
-    if (!card) return;
-    const id = +card.dataset.id;
-    if (e.target.classList.contains('btn-edit')) {
-        const b = store.bases().find(b => b.id === id);
-        return void ($('#base-modal-title').textContent = 'Edit Base', ['id', 'name', 'location', 'capacity', 'status'].forEach(e => $(`#base-${e}`).value = b[e]), baseModal.open());
-    }
-    (e.target.classList.contains('btn-danger') && confirm('Delete base?')) && (store.removeBase(id), renderBases());
-};
-$('#add-base-btn').onclick = () => {
-    $('#base-modal-title').textContent = 'Add Base';
-    ['id', 'name', 'location', 'capacity'].forEach(e => $(`#base-${e}`).value = '');
-    $('#base-status').value = 'operational';
-    baseModal.open();
-};
-$('#save-base').onclick = () => {
-    const id = $('#base-id').value ? +$('#base-id').value : null;
-    const name = $('#base-name').value.trim(), location = $('#base-location').value.trim(), capacity = $('#base-capacity').value.trim(), status = $('#base-status').value;
-    if (!name || !location || !capacity) return alert('Fill all fields');
-    id
-        ? store.updateBase({ id, name, location, capacity, status })
-        : store.addBase({ name, location, capacity, status });
-    renderBases();
-    baseModal.close();
-};
-
-// Ships (CRUD)
-function renderShips() { ListRenderer.render('ship', store.ships(), $('#ship-list')); }
-renderShips();
+    
+    updateStatsFromContent();
+});
+const renderShips = () => ListRenderer.render('ship', store.ships(), $('#ship-list'));
 $('#ship-list').onclick = e => {
     const card = e.target.closest('.ship-card');
     if (!card) return;
+    
     const id = +card.dataset.id;
     if (e.target.classList.contains('btn-edit')) {
-        const s = store.ships().find(s => s.id === id);
+        const s = store.ships().find(x => x.id === id);
+        ['id','name','class','hull','status'].forEach(f => $(`#ship-${f}`).value = s[f] || '');
         $('#ship-modal-title').textContent = 'Edit Ship';
-        ['id', 'name', 'class', 'hull', 'status'].forEach(e => $(`#ship-${e}`).value = s[e]);
         shipModal.open();
+        return;
     }
-    (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) && (store.removeShip(id), renderShips());
+    
+    if (e.target.classList.contains('btn-danger') && confirm('Delete ship?')) {
+        store.removeShip(id);
+        renderShips();
+        updateStatsFromContent();
+    }
 };
 $('#add-ship-btn').onclick = () => {
-    $('#ship-modal-title').textContent = 'Add Ship';
-    ['ship-id', 'ship-name', 'ship-hull'].forEach(e => $(`#${e}`).value = '');
+    ['ship-id','ship-name','ship-hull'].forEach(f => $(`#${f}`).value = '');
     $('#ship-class').value = 'Aircraft Carrier';
     $('#ship-status').value = 'active';
+    $('#ship-modal-title').textContent = 'Add Ship';
     shipModal.open();
 };
 $('#save-ship').onclick = () => {
-    const id = $('#ship-id').value ? +$('#ship-id').value : null
-    , name = $('#ship-name').value.trim(), cls = $('#ship-class').value, hull = $('#ship-hull').value.trim(), status = $('#ship-status').value;
-    if (!name || !hull) return alert('Fill all fields');
-    id
-        ? store.updateShip({ id, name, class: cls, hull, status })
-        : store.addShip({ name, class: cls, hull, status });
+    const s = {
+        id: $('#ship-id').value ? +$('#ship-id').value : null,
+        name: $('#ship-name').value.trim(),
+        class: $('#ship-class').value,
+        hull: $('#ship-hull').value.trim(),
+        status: $('#ship-status').value
+    };
+    
+    if (!s.name || !s.hull) {
+        alert('Fill all fields');
+        return;
+    }
+    
+    if (s.id) {
+        store.updateShip(s);
+    } else {
+        store.addShip(s);
+    }
+    
     renderShips();
     shipModal.close();
+    updateStatsFromContent();
 };
+const renderBases = () => ListRenderer.render('base', store.bases(), $('#base-list'));
+$('#base-list').onclick = e => {
+    const card = e.target.closest('.base-card');
+    if (!card) return;
+    
+    const id = +card.dataset.id;
+    if (e.target.classList.contains('btn-edit')) {
+        const b = store.bases().find(x => x.id === id);
+        ['id','name','location','capacity','status'].forEach(f => $(`#base-${f}`).value = b[f] || '');
+        $('#base-modal-title').textContent = 'Edit Base';
+        baseModal.open();
+        return;
+    }
+    
+    if (e.target.classList.contains('btn-danger') && confirm('Delete base?')) {
+        store.removeBase(id);
+        renderBases();
+        updateStatsFromContent();
+    }
+};
+$('#add-base-btn').onclick = () => {
+    ['id','name','location','capacity'].forEach(f => $(`#base-${f}`).value = '');
+    $('#base-status').value = 'operational';
+    $('#base-modal-title').textContent = 'Add Base';
+    baseModal.open();
+};
+$('#save-base').onclick = () => {
+    const b = ['id','name','location','capacity','status'].reduce((o,f) => {
+        o[f] = $(`#base-${f}`).value.trim();
+        return o;
+    }, {});
+    
+    if (!b.name || !b.location || !b.capacity) {
+        alert('Fill all fields');
+        return;
+    }
+    
+    if (b.id) {
+        store.updateBase(b);
+    } else {
+        store.addBase(b);
+    }
+    
+    renderBases();
+    baseModal.close();
+    updateStatsFromContent();
+};
+const updateStatsFromContent = () => {
+    const shipsCount = $('#ship-list').children.length;
+    const actualShipsCount = $('#ship-list').querySelector('.empty-state') ? 0 : shipsCount;
+    $('#ships-count').textContent = actualShipsCount;
+
+    const fleetsContent = $('#fleets-section');
+    let fleetsCount = 0;
+    if (fleetsContent) {
+        const fleetCards = fleetsContent.querySelectorAll('.grid > .card');
+        fleetsCount = fleetCards.length;
+    }
+    $('#fleets-count').textContent = fleetsCount;
+};
+const initApp = async () => {
+    const dataLoaded = await store.loadData();
+    
+    if (dataLoaded) {
+        renderBases();
+        renderShips();
+        
+        updateStatsFromContent();
+    } else {
+        $('#base-list').innerHTML = `<div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>Failed to load bases and ships data.</p>
+        </div>`;
+        
+        $('#ship-list').innerHTML = `<div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>Failed to load bases and ships data.</p>
+        </div>`;
+    }
+};
+document.addEventListener('DOMContentLoaded', initApp);
