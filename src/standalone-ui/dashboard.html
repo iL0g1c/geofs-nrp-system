@@ -715,16 +715,28 @@ class DataStore {
         }
         return f
     }
-    import(e) {
-        console.log(this.parseCSV(e));
+    import(e, t) {
+        var a = this.parseCSV(e);
+        console.log(t);
+        // @todo - accept non pluralised file names
+        switch (t.split(".")[0]) {
+            case "bases":
+                break;
+            case "ships:
+                break;
+            case "fleets":
+                break
+            default:
+                break;
+        }
     }
     export(e) {}
     fileReader = new FileReader();
     fileInput = $('#data-upload');
     async readCSV (e) {
-        this.fileReader.onload = () => this.import(this.fileReader.result);
+        var t = e.target.files[0], a = t.name;
+        this.fileReader.onload = () => this.import(this.fileReader.result, a);
         this.fileInput.setAttribute('disabled', !0);
-        const t = e.target.files[0];
         this.fileReader.readAsText(t);
     } // tested
 }
