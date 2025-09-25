@@ -217,6 +217,13 @@
             .section-buttons { flex-direction: column; width: 100%;}
             .add-ship-btn, .design-ship-btn { width: 100%; justify-content: center;}
         }
+        .csv-input { z-index: -1; display: none; }
+        .csv-input-btn {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); float: right; position: relative;
+            background-color: var(--bg-dark); color: var(--text-primary);
+            cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+        }
+        .csv-input-btn:hover { background-color: #383e47; }
     </style>
 </head>
 <body>
@@ -279,6 +286,8 @@
                 <div class="tab" data-tab="fleets">Fleets</div>
             </div>
             <div class="user-menu">
+                <input id="data-upload" class="csv-input" type="file" accept=".csv"/>
+                <label for="data-upload" class="csv-input-btn">Upload Data</label>
                 <button class="sign-out-btn">
                     <span></span> Sign Out
                 </button>
@@ -510,7 +519,6 @@
             </div>
         </div>
     </div>
-<input id="data-upload" type="file" accept=".csv"/>
     <script>
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 class Modal {
@@ -667,6 +675,7 @@ class DataStore {
     }
     
     async loadData() {
+        return; // TEMPORARY, until backend is set up
         try {
             const [basesResponse, shipsResponse] = await Promise.all([
                 fetch('bases.json'),
@@ -716,15 +725,18 @@ class DataStore {
         return f
     }
     import(e, t) {
+        if (!e || !t) throw new TypeError('invalid file upload');
         var a = this.parseCSV(e);
-        console.log(t);
-        // @todo - accept non pluralised file names
-        switch (t.split(".")[0]) {
+        t = t.split(".")[0], t.endsWith("s") || (t += "s");
+        switch (t) {
             case "bases":
+                console.log('bases');
                 break;
-            case "ships:
+            case "ships":
+                console.log('ships');
                 break;
             case "fleets":
+                console.log('fleets');
                 break
             default:
                 break;
