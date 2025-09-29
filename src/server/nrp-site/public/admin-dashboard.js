@@ -443,7 +443,7 @@ $('#edit-details-btn').onclick = () => {
     $('#edit-force-name').value = $('.force-name').textContent.replace(/^🇺🇸\s*/, '');
     ['ships','aircraft','fleets','personnel','commander','established','headquarters'].forEach(f =>
         $(`#edit-${f}`).value = $(`#${f}-count, #${f}-value`.split(', ').map(sel => $(sel)).find(el=>el)?.textContent || ''
-    );
+    ));
     $('#edit-motto').value = $('#motto-value').textContent.replace(/"/g,'');
     editForceModal.open();
 };
