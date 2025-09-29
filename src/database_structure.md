@@ -26,3 +26,12 @@ deployed: bool
 forces
 id: int
 identifier: string
+name: string
+ship count: int
+aircraft count: int
+fleet count: int
+personell count: int
+commander: string
+established: datetime
+headquarters: string
+motto: string
