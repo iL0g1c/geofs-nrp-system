@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Carrier Strike Group 12",
+    "ships": [1, 2],
+    "baseId": 1,
+    "status": "deployed",
+    "location": "Mediterranean Sea"
+  },
+  {
+    "id": 2,
+    "name": "Pacific Submarine Group",
+    "ships": [3],
+    "baseId": 2,
+    "status": "operational",
+    "location": "Pearl Harbor"
+  }
+]

@@ -31,27 +31,13 @@ body {
 .tab:hover { background: var(--btn-secondary);}
 .tab.active { background: rgba(88,166,255,0.15); color: var(--accent-blue);}
 .user-menu { display: flex; align-items: center; gap: 12px; flex-shrink: 0;}
-.ship-tracker-btn {
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(88,166,255,0.35);
-    background: rgba(88,166,255,0.12);
-    color: var(--accent-blue);
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
+.csv-input { z-index: -1; display: none; }
+.csv-input-btn {
+    padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background-color: var(--bg-dark); color: var(--text-primary);
+    cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
 }
-.ship-tracker-btn:hover {
-    background: rgba(88,166,255,0.24);
-    color: var(--text-primary);
-}
-.ship-tracker-btn .material-symbols-outlined {
-    font-size: 18px;
-}
+.csv-input-btn:hover { background-color: #383e47; }
 .sign-out-btn {
     padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
     background: rgba(218,54,51,0.1); border-color: rgba(238,45,41,0.1) ;
@@ -170,35 +156,35 @@ body {
 .modal-footer {
     padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px;
 }
-.base-list, .ship-list {
+.base-list, .ship-list, .tf-list {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px; margin-top: 20px;
 }
-.base-card, .ship-card {
+.base-card, .ship-card, .tf-card {
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; position: relative;
     transition: transform .2s;
 }
-.base-card:hover, .ship-card:hover {
+.base-card:hover, .ship-card:hover, .tf-card:hover {
     transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.base-card-header, .ship-card-header {
+.base-card-header, .ship-card-header, .tf-card-header {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
 }
-.base-name, .ship-name { font-size: 18px; font-weight: 500; color: var(--accent-blue);}
-.base-actions, .ship-actions { display: flex; gap: 8px;}
-.base-details, .ship-details { margin-top: 12px;}
-.base-detail, .ship-detail {
+.base-name, .ship-name, .tf-name { font-size: 18px; font-weight: 500; color: var(--accent-blue);}
+.base-actions, .ship-actions, .tf-actions { display: flex; gap: 8px;}
+.base-details, .ship-details, .tf-details { margin-top: 12px;}
+.base-detail, .ship-detail, .tf-detail {
     display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(48,54,61,0.5);
 }
-.base-detail:last-child, .ship-detail:last-child { border-bottom: none;}
-.base-detail-label, .ship-detail-label { color: var(--text-secondary);}
-.base-detail-value, .ship-detail-value { font-weight: 500;}
-.add-base-btn, .add-ship-btn, .design-ship-btn {
+.base-detail:last-child, .ship-detail:last-child, .tf-detail:last-child { border-bottom: none;}
+.base-detail-label, .ship-detail-label, .tf-detail-label { color: var(--text-secondary);}
+.base-detail-value, .ship-detail-value, .tf-detail-value { font-weight: 500;}
+.add-base-btn, .add-ship-btn, .design-ship-btn, .add-tf-btn {
     background: var(--btn-primary); border: none; color: white; padding: 8px 16px; border-radius: 6px;
     cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px;
     transition: background 0.2s;
 }
-.add-base-btn:hover, .add-ship-btn:hover { background: #2ea043;}
+.add-base-btn:hover, .add-ship-btn:hover, .add-tf-btn:hover { background: #2ea043;}
 .design-ship-btn {
     background: var(--btn-secondary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
 }
@@ -210,6 +196,14 @@ body {
     background: rgba(88,166,255,0.15); color: var(--accent-blue);
 }
 .section-buttons { display: flex; gap: 12px;}
+.ship-selector { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: var(--bg-dark); }
+.ship-option { display: flex; align-items: center; padding: 6px; cursor: pointer; border-radius: 4px; }
+.ship-option:hover { background: var(--btn-secondary); }
+.ship-option.selected { background: var(--btn-primary); color: white; }
+.base-selector { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: var(--bg-dark); }
+.base-option { display: flex; align-items: center; padding: 6px; cursor: pointer; border-radius: 4px; }
+.base-option:hover { background: var(--btn-secondary); }
+.base-option.selected { background: var(--btn-primary); color: white; }
 .logo { font-size: 20px; font-weight: 600; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
 .nav-links { display: flex; gap: 16px; }
 .nav-link {
@@ -280,7 +274,7 @@ body.ship-designer-page .form-actions {
     .user-menu { gap: 8px;}
     .sidebar-content { padding-top: 20px;}
     .tabs { flex-wrap: wrap;}
-    .base-list, .ship-list { grid-template-columns: 1fr;}
+    .base-list, .ship-list, .tf-list { grid-template-columns: 1fr;}
     .section-buttons { flex-direction: column; width: 100%;}
     .add-ship-btn, .design-ship-btn { width: 100%; justify-content: center;}
     body.ship-designer-page .primary-design-form { padding: 8px; }
