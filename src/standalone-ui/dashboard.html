@@ -787,29 +787,7 @@ class DataStore {
     }
     // @todo - actually integrate & make the input html & css nice looking
     parseCSV(t) {
-        const n = [];
-        let r = 0, e = !1, l = "", o = [];
-        const s = () => {
-            o.push(l), l = ""
-        }, h = () => {
-            n.push(o), o = []
-        }, c = t.length;
-        for (;r <= c;) {
-            const n = t[r] || "\n";
-            e ? '"' === n ? '"' === t[r + 1] ? (l += '"', r++) : e = !1 : l += n : '"' === n ? e= !0 : "," === n ? s() : "\n" === n || "\r" === n ? ("\r" === n && "\n" === t[r + 1] && r++, s(), h()) : r === c ? (s(), h()) : l += n, r++
-        }
-        if (n.length < 1) return [];
-        const a = n[0].map((t => t.trim()))
-        , f = new Array(n.length - 1);
-        for (let t = 1; t < n.length; t++) {
-            const r = n[t], e = {};
-            for (let t = 0; t < a.length; t++) {
-                let n = r[t] || "";
-                e[a[t]] = n.trim()
-            }
-            f[t-1] = e
-        }
-        return f
+        return t.trim().split('\n').map(row => row.split(','));
     }
     import(e, t) {
         if (!e || !t) throw new TypeError('invalid file upload');
@@ -817,13 +795,13 @@ class DataStore {
         t = t.split(".")[0], t.endsWith("s") || (t += "s");
         switch (t) {
             case "bases":
-                console.log('bases');
+                a.forEach(v => this.addBase({name: v[0], location: v[1], capacity: v[2], status: v[3]}));
                 break;
             case "ships":
-                console.log('ships');
+                a.forEach(v => this.addShip({name: v[0], class: v[1], hull: v[2], status: v[3]}));
                 break;
-            case "fleets":
-                console.log('fleets');
+            case "tfs":
+                a.forEach(v => this.addTf({baseID: v[0], name: v[1], ships: v[2]}));
                 break
             default:
                 break;
