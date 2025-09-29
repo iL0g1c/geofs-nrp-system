@@ -38,6 +38,11 @@ body {
     cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
 }
 .csv-input-btn:hover { background-color: #383e47; }
+.save-btn {
+    padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: rgba(54,218,51,0.1); border-color: rgba(45,238,41,0.1) ;
+    color: var(--text-primary); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
 .sign-out-btn {
     padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
     background: rgba(218,54,51,0.1); border-color: rgba(238,45,41,0.1) ;

@@ -14,6 +14,17 @@ const applyBasePath = (pathname = '/') => {
 
     return `${basePath}${normalized}`.replace(/\/{2,}/g, '/');
 };
+const attachSaveHandler = () => {
+    const button = $('.save-btn');
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        console.log(store);
+    });
+};
+attachSaveHandler();
 const attachSignOutHandler = () => {
     const button = $('.sign-out-btn');
     if (!button) {
