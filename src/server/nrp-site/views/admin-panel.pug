@@ -26,9 +26,9 @@ block layout-content
           .stat-card(data-stat='ships')
             .stat-value#ships-count 0
             .stat-label Ships
-          .stat-card(data-stat='fleets')
-            .stat-value#fleets-count 0
-            .stat-label Fleets
+          .stat-card(data-stat='bases')
+            .stat-value#bases-count 0
+            .stat-label Bases
         .force-details
           .detail-item
             span.detail-label Commander
@@ -50,9 +50,8 @@ block layout-content
         .tab(data-tab='bases') Bases
         .tab(data-tab='fleets') Fleets
       .user-menu
-        a.ship-tracker-btn(href=applyBasePath('/ship-tracker'), target='_blank', rel='noopener')
-          span.material-symbols-outlined map
-          |  Ship Tracker
+        input#data-upload.csv-input(type='file', accept='.csv')
+        label.csv-input-btn(for='data-upload') Upload Data
         button.sign-out-btn(type='button', data-logout-return-to=logoutReturnTo)
           span
           |  Sign Out
@@ -85,36 +84,15 @@ block layout-content
           p Loading bases...
     .section#fleets-section
       .section-header
-        h2.section-title Fleets
-      .grid
-        .card
-          .card-header
-            h3.card-title Carrier Strike Group 12
-          .card-content
-            p Base: Norfolk Naval Station
-            p Composition:
-            p • CVN-78 USS Gerald R. Ford (Carrier)
-            p • DDG-116 USS Zumwalt (Destroyer)
-            p • SSN-785 USS Indiana (Submarine)
-            p + 5 more vessels
-            p
-              | Status:&nbsp;
-              span.status
-                span.status-dot.status-green
-                | Deployed - Mediterranean
-        .card
-          .card-header
-            h3.card-title Pacific Submarine Fleet
-          .card-content
-            p Base: Pearl Harbor
-            p Composition:
-            p • 12 Attack Submarines
-            p • 3 Ballistic Missile Submarines
-            p
-              | Status:&nbsp;
-              span.status
-                span.status-dot.status-green
-                | Operational
+        h2.section-title Task Forces
+        button#add-tf-btn.add-tf-btn(type='button')
+          span
+            | +
+          |  Add Task Force
+      .tf-list#tf-list
+        .loading
+          .spinner
+          p Loading task forces...
   #edit-force-modal.modal
     .modal-content
       .modal-header
@@ -171,11 +149,11 @@ block layout-content
           label.form-label(for='base-name') Base Name
           input#base-name.form-input(type='text', placeholder='Enter base name')
         .form-group
-          label.form-label(for='base-location') Location
-          input#base-location.form-input(type='text', placeholder='Enter location')
+          label.form-label(for='base-coordinates') Coordinates
+          input#base-coordinates.form-input(type='text', placeholder='Enter coordinates (e.g., 36.8467° N, 76.2859° W)')
         .form-group
-          label.form-label(for='base-capacity') Capacity
-          input#base-capacity.form-input(type='text', placeholder='Enter capacity (e.g. 10,000 personnel)')
+          label.form-label(for='base-capacity') Capacity (Tonnage)
+          input#base-capacity.form-input(type='text', placeholder='Enter capacity (e.g., 10,000 personnel)')
         .form-group
           label.form-label(for='base-status') Status
           select#base-status.form-input
@@ -219,6 +197,35 @@ block layout-content
       .modal-footer
         button#cancel-ship.btn(type='button') Cancel
         button#save-ship.btn.btn-primary(type='button') Save Ship
+  #tf-modal.modal
+    .modal-content
+      .modal-header
+        h3#tf-modal-title.modal-title Add Task Force
+        button#close-tf-modal.modal-close(type='button') &times;
+      .modal-body
+        input#tf-id(type='hidden')
+        .form-group
+          label.form-label(for='tf-name') Task Force Name
+          input#tf-name.form-input(type='text', placeholder='Enter task force name')
+        .form-group
+          label.form-label Ships
+          .ship-selector#ship-selector
+        .form-group
+          label.form-label Base
+          .base-selector#base-selector
+        .form-group
+          label.form-label(for='tf-status') Status
+          select#tf-status.form-input
+            option(value='operational') Operational
+            option(value='deployed') Deployed
+            option(value='training') Training
+            option(value='maintenance') Maintenance
+        .form-group
+          label.form-label(for='tf-location') Current Location
+          input#tf-location.form-input(type='text', placeholder='Enter current location')
+      .modal-footer
+        button#cancel-tf.btn(type='button') Cancel
+        button#save-tf.btn.btn-primary(type='button') Save Task Force
 
 block append scripts
   script.
