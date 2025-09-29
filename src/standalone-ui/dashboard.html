@@ -225,6 +225,13 @@
             .section-buttons { flex-direction: column; width: 100%;}
             .add-ship-btn, .design-ship-btn { width: 100%; justify-content: center;}
         }
+        .csv-input { z-index: -1; display: none; }
+        .csv-input-btn {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); float: right; position: relative;
+            background-color: var(--bg-dark); color: var(--text-primary);
+            cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+        }
+        .csv-input-btn:hover { background-color: #383e47; }
     </style>
 </head>
 <body>
@@ -287,6 +294,8 @@
                 <div class="tab" data-tab="fleets">Fleets</div>
             </div>
             <div class="user-menu">
+                <input id="data-upload" class="csv-input" type="file" accept=".csv"/>
+                <label for="data-upload" class="csv-input-btn">Upload Data</label>
                 <button class="sign-out-btn">
                     <span></span> Sign Out
                 </button>
@@ -751,6 +760,7 @@ class DataStore {
         this._tfs = this._remove(this._tfs, id);
     }
     async loadData() {
+        return; // TEMPORARY, until backend is set up
         try {
             const [basesResponse, shipsResponse, tfsResponse] = await Promise.all([
                 fetch('data/bases.json'),
@@ -775,6 +785,59 @@ class DataStore {
             return false;
         }
     }
+    // @todo - actually integrate & make the input html & css nice looking
+    parseCSV(t) {
+        const n = [];
+        let r = 0, e = !1, l = "", o = [];
+        const s = () => {
+            o.push(l), l = ""
+        }, h = () => {
+            n.push(o), o = []
+        }, c = t.length;
+        for (;r <= c;) {
+            const n = t[r] || "\n";
+            e ? '"' === n ? '"' === t[r + 1] ? (l += '"', r++) : e = !1 : l += n : '"' === n ? e= !0 : "," === n ? s() : "\n" === n || "\r" === n ? ("\r" === n && "\n" === t[r + 1] && r++, s(), h()) : r === c ? (s(), h()) : l += n, r++
+        }
+        if (n.length < 1) return [];
+        const a = n[0].map((t => t.trim()))
+        , f = new Array(n.length - 1);
+        for (let t = 1; t < n.length; t++) {
+            const r = n[t], e = {};
+            for (let t = 0; t < a.length; t++) {
+                let n = r[t] || "";
+                e[a[t]] = n.trim()
+            }
+            f[t-1] = e
+        }
+        return f
+    }
+    import(e, t) {
+        if (!e || !t) throw new TypeError('invalid file upload');
+        var a = this.parseCSV(e);
+        t = t.split(".")[0], t.endsWith("s") || (t += "s");
+        switch (t) {
+            case "bases":
+                console.log('bases');
+                break;
+            case "ships":
+                console.log('ships');
+                break;
+            case "fleets":
+                console.log('fleets');
+                break
+            default:
+                break;
+        }
+    }
+    export(e) {}
+    fileReader = new FileReader();
+    fileInput = $('#data-upload');
+    async readCSV (e) {
+        var t = e.target.files[0], a = t.name;
+        this.fileReader.onload = () => this.import(this.fileReader.result, a);
+        this.fileInput.setAttribute('disabled', !0);
+        this.fileReader.readAsText(t);
+    } // tested
 }
 const store = new DataStore();
 const editForceModal = new Modal($('#edit-force-modal'), [$('#close-force-modal'), $('#cancel-force-details')]);
@@ -783,6 +846,8 @@ const shipModal = new Modal($('#ship-modal'), [$('#close-ship-modal'), $('#cance
 const tfModal = new Modal($('#tf-modal'), [$('#close-tf-modal'), $('#cancel-tf')]);
 let selectedShips = [];
 let selectedBase = null;
+
+$("#data-upload").addEventListener("change", store.readCSV.bind(store));
 $('#force-logo').onclick = () => $('#logo-upload').click();
 $('#logo-upload').onchange = function() {
     if (this.files[0]) {
