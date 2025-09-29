@@ -795,13 +795,13 @@ class DataStore {
         t = t.split(".")[0], t.endsWith("s") || (t += "s");
         switch (t) {
             case "bases":
-                this._bases = a.forEach(v => {return {id: this._bases.length + 1, name: v[0], location: v[1], capacity: v[2], status: v[3]} });
+                a.forEach(v => this.addBase({name: v[0], location: v[1], capacity: v[2], status: v[3]}));
                 break;
             case "ships":
-                this._ships = a.forEach(v => { return {id: this._ships.length + 1, name: v[0], class: v[1], hull: v[2], status: v[3]} });
+                a.forEach(v => this.addShip({name: v[0], class: v[1], hull: v[2], status: v[3]}));
                 break;
-            case "fleets":
-                console.error("fleets format doesn't exist yet so this import is not supported");
+            case "tfs":
+                a.forEach(v => this.addTf({baseID: v[0], name: v[1], ships: v[2]}));
                 break
             default:
                 break;
